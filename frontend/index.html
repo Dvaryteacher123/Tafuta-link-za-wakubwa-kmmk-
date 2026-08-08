@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pata Link za WhatsApp Groups</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <style>
+        /* =========================================================
+           ROOT VARIABLES & RESET
+           ========================================================= */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #0a0a0a; color: #ffffff; overflow-x: hidden; }
+        :root { --primary: #4F46E5; --primary-dark: #4338CA; --green: #10B981; --red: #EF4444; --yellow: #F59E0B; --glass: rgba(255,255,255,0.05); --glass-border: rgba(255,255,255,0.1); }
+
+        .gradient-text { background: linear-gradient(135deg, #4F46E5, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .text-center { text-align: center; }
+        .text-muted { color: #6B7280; }
+
+        /* =========================================================
+           SCROLLBAR
+           ========================================================= */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #1a1a2e; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+
+        /* =========================================================
+           LOADING SCREEN
+           ========================================================= */
+        #loadingScreen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #0a0a0a; display: flex; align-items: center; justify-content: center;
+            z-index: 9999; transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        #loadingScreen.hidden { opacity: 0; visibility: hidden; }
+        .loader-container { text-align: center; }
+        .loader-logo { font-size: 48px; color: var(--primary); margin-bottom: 16px; animation: pulse 1.5s ease-in-out infinite; }
+        .loader-spinner { width: 50px; height: 50px; border: 3px solid var(--glass-border); border-top: 3px solid var(--primary); border-radius: 50%; margin: 0 auto 16px; animation: spin 1s linear infinite; }
+        .loader-text { color: #6B7280; font-size: 14px; letter-spacing: 2px; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+
+        /* =========================================================
+           BACKGROUND ORBS
+           ========================================================= */
+        .bg-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.15; animation: float 10s ease-in-out infinite; }
+        .bg-orb-1 { width: 500px; height: 500px; background: #4F46E5; top: -10%; right: -10%; }
+        .bg-orb-2 { width: 400px; height: 400px; background: #7C3AED; bottom: -10%; left: -10%; animation-delay: 3s; }
+        .bg-orb-3 { width: 300px; height: 300px; background: #10B981; top: 50%; left: 50%; transform: translate(-50%, -50%); animation-delay: 6s; }
+        @keyframes float { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(30px,-30px) scale(1.1); } }
+
+        /* =========================================================
+           GET STARTED PAGE
+           ========================================================= */
+        .get-started {
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            text-align: center; padding: 80px 24px; position: relative;
+        }
+        .get-started-content { position: relative; z-index: 1; max-width: 700px; }
+        .get-started-logo { font-size: 48px; color: var(--primary); margin-bottom: 16px; }
+        .get-started-title { font-size: 56px; font-weight: 900; line-height: 1.1; margin-bottom: 16px; }
+        .get-started-sub { font-size: 18px; color: #a0a0b0; margin-bottom: 32px; line-height: 1.8; }
+        .get-started-btn {
+            padding: 16px 48px; font-size: 18px; font-weight: 700;
+            background: linear-gradient(135deg, #4F46E5, #7C3AED);
+            border: none; border-radius: 12px; color: #fff; cursor: pointer;
+            transition: 0.3s; display: inline-flex; align-items: center; gap: 12px;
+        }
+        .get-started-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(79,70,229,0.4); }
+
+        /* =========================================================
+           NAVBAR
+           ========================================================= */
+        .navbar {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+            padding: 14px 24px; background: rgba(10,10,10,0.85);
+            backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border);
+            display: flex; align-items: center; justify-content: space-between;
+            transition: 0.3s;
+        }
+        .navbar.scrolled { background: rgba(10,10,10,0.95); }
+        .nav-logo { font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+        .nav-logo i { color: var(--primary); }
+        .nav-links { display: flex; align-items: center; gap: 24px; list-style: none; }
+        .nav-links a { color: #a0a0b0; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.3s; }
+        .nav-links a:hover { color: #fff; }
+        .nav-actions { display: flex; align-items: center; gap: 12px; }
+        .nav-btn { padding: 8px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.3s; font-size: 14px; }
+        .nav-btn-login { background: transparent; border: 1px solid var(--glass-border); color: #a0a0b0; }
+        .nav-btn-login:hover { color: #fff; border-color: var(--primary); }
+        .nav-btn-signup { background: linear-gradient(135deg, #4F46E5, #7C3AED); color: #fff; }
+        .nav-btn-signup:hover { transform: scale(1.05); }
+        .nav-menu-toggle { display: none; background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; }
+
+        @media (max-width: 768px) {
+            .nav-menu-toggle { display: block; }
+            .nav-links { display: none; flex-direction: column; position: absolute; top: 70px; left: 0; width: 100%; background: #0a0a0a; padding: 20px; border-bottom: 1px solid var(--glass-border); }
+            .nav-links.open { display: flex; }
+            .nav-btn-login, .nav-btn-signup { display: none; }
+        }
+
+        /* =========================================================
+           HOME PAGE
+           ========================================================= */
+        #homePage { display: none; padding-top: 80px; }
+
+        /* Hero */
+        .hero { padding: 60px 24px; text-align: center; }
+        .hero h1 { font-size: 48px; font-weight: 900; margin-bottom: 16px; }
+        .hero p { font-size: 18px; color: #a0a0b0; max-width: 600px; margin: 0 auto 32px; }
+
+        /* Search */
+        .search-section { padding: 0 24px 40px; max-width: 800px; margin: 0 auto; }
+        .search-box { display: flex; align-items: center; background: #1a1a2e; border: 2px solid var(--glass-border); border-radius: 12px; padding: 4px; transition: 0.3s; }
+        .search-box:focus-within { border-color: var(--primary); }
+        .search-box input { flex: 1; padding: 14px 20px; background: transparent; border: none; outline: none; color: #fff; font-size: 16px; }
+        .search-box input::placeholder { color: #6B7280; }
+        .search-box button { padding: 12px 24px; background: linear-gradient(135deg, #4F46E5, #7C3AED); border: none; border-radius: 8px; color: #fff; cursor: pointer; font-size: 18px; transition: 0.3s; }
+        .search-box button:hover { transform: scale(1.05); }
+
+        /* Filters */
+        .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+        .filter-btn { padding: 6px 16px; background: var(--glass); border: 1px solid var(--glass-border); border-radius: 50px; color: #a0a0b0; cursor: pointer; font-size: 13px; transition: 0.3s; }
+        .filter-btn:hover, .filter-btn.active { background: linear-gradient(135deg, #4F46E5, #7C3AED); color: #fff; border-color: transparent; }
+
+        /* Sections */
+        .section { padding: 40px 24px; max-width: 1200px; margin: 0 auto; }
+        .section-title { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
+        .section-sub { color: #a0a0b0; margin-bottom: 24px; }
+
+        /* Grid */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
+
+        /* Cards */
+        .card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 16px; overflow: hidden; transition: 0.3s; backdrop-filter: blur(20px); }
+        .card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .card-image { height: 160px; background: linear-gradient(135deg, #4F46E5, #7C3AED); display: flex; align-items: center; justify-content: center; font-size: 48px; color: #fff; position: relative; }
+        .card-image img { width: 100%; height: 100%; object-fit: cover; }
+        .card-badge { position: absolute; top: 12px; right: 12px; padding: 4px 12px; border-radius: 50px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+        .badge-free { background: var(--green); color: #fff; }
+        .badge-premium { background: var(--yellow); color: #fff; }
+        .badge-featured { background: var(--primary); color: #fff; }
+        .badge-trending { background: var(--red); color: #fff; }
+        .card-body { padding: 20px; }
+        .card-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+        .card-desc { font-size: 14px; color: #a0a0b0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .card-footer { padding: 12px 20px; border-top: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; }
+        .card-price { font-weight: 700; color: var(--green); }
+        .card-price.free { color: #6B7280; }
+        .card-btn { padding: 8px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.3s; background: linear-gradient(135deg, #4F46E5, #7C3AED); color: #fff; }
+        .card-btn:hover { transform: scale(1.05); }
+        .card-btn.free-btn { background: var(--green); }
+
+        /* Stats Section */
+        .stats-section { padding: 60px 24px; background: #0f0f1a; }
+        .stats-section .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 24px; max-width: 1200px; margin: 0 auto; }
+        .stat-item { text-align: center; padding: 24px; background: var(--glass); border: 1px solid var(--glass-border); border-radius: 16px; }
+        .stat-item .number { font-size: 36px; font-weight: 800; background: linear-gradient(135deg, #4F46E5, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: block; }
+        .stat-item .label { color: #a0a0b0; font-size: 14px; }
+
+        /* Footer */
+        .footer { text-align: center; padding: 40px 24px; border-top: 1px solid var(--glass-border); color: #6B7280; font-size: 14px; margin-top: 40px; }
+        .footer a { color: var(--primary); text-decoration: none; }
+
+        /* Floating WhatsApp */
+        .wa-float { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #25D366; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 30px; box-shadow: 0 4px 20px rgba(37,211,102,0.4); z-index: 999; text-decoration: none; transition: 0.3s; }
+        .wa-float:hover { transform: scale(1.1); }
+
+        /* Scroll to Top */
+        .scroll-top { position: fixed; bottom: 100px; right: 30px; width: 50px; height: 50px; background: linear-gradient(135deg, #4F46E5, #7C3AED); border: none; border-radius: 50%; color: #fff; font-size: 20px; cursor: pointer; z-index: 999; opacity: 0; visibility: hidden; transition: 0.3s; }
+        .scroll-top.visible { opacity: 1; visibility: visible; }
+
+        /* Support Button */
+        .support-btn { position: fixed; bottom: 30px; left: 30px; background: linear-gradient(135deg, #4F46E5, #7C3AED); border: none; border-radius: 50px; padding: 12px 20px; color: #fff; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 20px rgba(79,70,229,0.4); z-index: 999; transition: 0.3s; text-decoration: none; font-size: 14px; }
+        .support-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(79,70,229,0.6); }
+        @media (max-width: 768px) { .support-btn { bottom: 100px; left: 20px; padding: 10px 16px; font-size: 12px; } .support-btn span { display: none; } }
+    </style>
+</head>
+<body>
+
+    <!-- ========================================================= -->
+    <!-- LOADING SCREEN -->
+    <!-- ========================================================= -->
+    <div id="loadingScreen">
+        <div class="loader-container">
+            <div class="loader-logo"><i class="fas fa-comments"></i></div>
+            <div class="loader-spinner"></div>
+            <p class="loader-text">Loading...</p>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- SUPPORT BUTTON -->
+    <!-- ========================================================= -->
+    <a href="mailto:dullamanyama0@gmail.com" class="support-btn"><i class="fas fa-headset"></i> <span>Support</span></a>
+
+    <!-- ========================================================= -->
+    <!-- GET STARTED PAGE -->
+    <!-- ========================================================= -->
+    <section class="get-started" id="getStarted">
+        <div class="bg-orb bg-orb-1"></div>
+        <div class="bg-orb bg-orb-2"></div>
+        <div class="bg-orb bg-orb-3"></div>
+        <div class="get-started-content">
+            <div class="get-started-logo"><i class="fas fa-comments"></i></div>
+            <h1 class="get-started-title">Pata Link za <br><span class="gradient-text">WhatsApp Groups</span></h1>
+            <p class="get-started-sub">Jipatie link za WhatsApp Groups zilizo approved na verified.<br>Jiunge na jamii yako leo.</p>
+            <button class="get-started-btn" id="getStartedBtn">GET STARTED <i class="fas fa-arrow-right"></i></button>
+        </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- HOME PAGE -->
+    <!-- ========================================================= -->
+    <div id="homePage">
+
+        <!-- Navbar -->
+        <nav class="navbar" id="mainNav">
+            <div class="nav-logo"><i class="fas fa-comments"></i> Pata Link</div>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#" class="nav-link active" data-section="home">Home</a></li>
+                <li><a href="#" class="nav-link" data-section="groups">Groups</a></li>
+                <li><a href="#" class="nav-link" data-section="stats">Statistics</a></li>
+                <li><a href="#" class="nav-link" data-section="contact">Contact</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="nav-btn nav-btn-login" id="navLoginBtn"><i class="fas fa-sign-in-alt"></i> Login</button>
+                <button class="nav-btn nav-btn-signup" id="navSignupBtn"><i class="fas fa-user-plus"></i> Sign Up</button>
+                <button class="nav-menu-toggle" id="navMenuToggle"><i class="fas fa-bars"></i></button>
+            </div>
+        </nav>
+
+        <!-- Hero -->
+        <section class="hero">
+            <h1>Discover Amazing <span class="gradient-text">WhatsApp Groups</span></h1>
+            <p>Pata link za WhatsApp Groups katika categories mbalimbali. Jiunge na jamii, jifunze, biashara na kucheza na watu wanaofanana na wewe.</p>
+        </section>
+
+        <!-- Search -->
+        <section class="search-section">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search WhatsApp groups...">
+                <button id="searchBtn"><i class="fas fa-arrow-right"></i></button>
+            </div>
+            <div class="filters">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="free">Free</button>
+                <button class="filter-btn" data-filter="premium">Premium</button>
+                <button class="filter-btn" data-filter="featured">Featured</button>
+                <button class="filter-btn" data-filter="trending">Trending</button>
+            </div>
+        </section>
+
+        <!-- Groups -->
+        <section class="section" id="groupsSection">
+            <h2 class="section-title"><i class="fas fa-users"></i> WhatsApp Groups</h2>
+            <p class="section-sub">Discover the best WhatsApp groups</p>
+            <div class="grid" id="groupsGrid">
+                <div style="grid-column:1/-1;text-align:center;color:#6B7280;padding:40px;">Loading groups...</div>
+            </div>
+        </section>
+
+        <!-- Statistics -->
+        <section class="stats-section" id="statsSection">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="number" id="statMembers">0</span>
+                    <span class="label">Total Members</span>
+                </div>
+                <div class="stat-item">
+                    <span class="number" id="statGroups">0</span>
+                    <span class="label">Active Groups</span>
+                </div>
+                <div class="stat-item">
+                    <span class="number" id="statPremium">0</span>
+                    <span class="label">Premium Groups</span>
+                </div>
+                <div class="stat-item">
+                    <span class="number" id="statVerified">0</span>
+                    <span class="label">Verified Links</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2024 Pata Link WhatsApp Groups. All rights reserved.</p>
+            <p><i class="fas fa-envelope"></i> <a href="mailto:dullamanyama0@gmail.com">dullamanyama0@gmail.com</a></p>
+            <p>Developer: +255 724 525 910</p>
+        </footer>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- FLOATING WHATSAPP -->
+    <!-- ========================================================= -->
+    <a href="https://wa.me/255724525910" target="_blank" class="wa-float"><i class="fab fa-whatsapp"></i></a>
+
+    <!-- ========================================================= -->
+    <!-- SCROLL TO TOP -->
+    <!-- ========================================================= -->
+    <button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})"><i class="fas fa-chevron-up"></i></button>
+
+    <!-- ========================================================= -->
+    <!-- JAVASCRIPT -->
+    <!-- ========================================================= -->
+    <script>
+        // =========================================================
+        // API URL
+        // =========================================================
+        const API_BASE_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:5000/api' 
+            : window.location.origin + '/api';
+
+        // =========================================================
+        // LOADING SCREEN
+        // =========================================================
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.getElementById('loadingScreen').classList.add('hidden');
+            }, 800);
+        });
+
+        // =========================================================
+        // GET STARTED
+        // =========================================================
+        if (localStorage.getItem('started')) {
+            document.getElementById('getStarted').style.display = 'none';
+            document.getElementById('homePage').style.display = 'block';
+        }
+
+        document.getElementById('getStartedBtn').addEventListener('click', function() {
+            localStorage.setItem('started', 'true');
+            document.getElementById('getStarted').style.display = 'none';
+            document.getElementById('homePage').style.display = 'block';
+            loadGroups();
+            loadStatistics();
+        });
+
+        // =========================================================
+        // NAVBAR SCROLL EFFECT
+        // =========================================================
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('mainNav');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+
+            const scrollTop = document.getElementById('scrollTop');
+            if (window.scrollY > 500) {
+                scrollTop.classList.add('visible');
+            } else {
+                scrollTop.classList.remove('visible');
+            }
+        });
+
+        // =========================================================
+        // MOBILE MENU TOGGLE
+        // =========================================================
+        document.getElementById('navMenuToggle').addEventListener('click', function() {
+            document.getElementById('navLinks').classList.toggle('open');
+        });
+
+        // =========================================================
+        // NAV LINKS SMOOTH SCROLL
+        // =========================================================
+        document.querySelectorAll('.nav-link').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('navLinks').classList.remove('open');
+                const section = this.dataset.section;
+                const target = document.getElementById(section + 'Section');
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // =========================================================
+        // SEARCH
+        // =========================================================
+        function searchGroups() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('.card').forEach(function(card) {
+                const title = card.querySelector('.card-title')?.textContent.toLowerCase() || '';
+                const desc = card.querySelector('.card-desc')?.textContent.toLowerCase() || '';
+                const match = title.includes(query) || desc.includes(query);
+                card.style.display = match ? '' : 'none';
+            });
+        }
+
+        document.getElementById('searchBtn').addEventListener('click', searchGroups);
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') searchGroups();
+        });
+
+        // =========================================================
+        // FILTERS
+        // =========================================================
+        let currentFilter = 'all';
+
+        document.querySelectorAll('.filter-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.dataset.filter;
+                applyFilters();
+            });
+        });
+
+        function applyFilters() {
+            document.querySelectorAll('.card').forEach(function(card) {
+                const show = currentFilter === 'all' || card.dataset[currentFilter] === 'true';
+                card.style.display = show ? '' : 'none';
+            });
+        }
+
+        // =========================================================
+        // LOAD GROUPS
+        // =========================================================
+        async function loadGroups() {
+            const grid = document.getElementById('groupsGrid');
+            try {
+                const res = await fetch(API_BASE_URL + '/products');
+                const data = await res.json();
+                if (data.success && data.data.length > 0) {
+                    grid.innerHTML = data.data.map(function(g) {
+                        return `
+                            <div class="card" data-free="${g.isFree}" data-premium="${g.isPremium}" data-featured="${g.isFeatured}" data-trending="${g.isTrending}">
+                                <div class="card-image">
+                                    ${g.imageUrl ? `<img src="${g.imageUrl}" alt="${g.title}">` : '<i class="fas fa-users"></i>'}
+                                    ${g.isFree ? '<span class="card-badge badge-free">FREE</span>' : ''}
+                                    ${g.isPremium ? '<span class="card-badge badge-premium">PREMIUM</span>' : ''}
+                                    ${g.isFeatured ? '<span class="card-badge badge-featured">FEATURED</span>' : ''}
+                                    ${g.isTrending ? '<span class="card-badge badge-trending">TRENDING</span>' : ''}
+                                </div>
+                                <div class="card-body">
+                                    <div class="card-title">${g.title}</div>
+                                    <div class="card-desc">${g.description || ''}</div>
+                                </div>
+                                <div class="card-footer">
+                                    <span class="card-price ${g.isFree ? 'free' : ''}">${g.isFree ? 'FREE' : 'TSh ' + (g.price||0).toLocaleString()}</span>
+                                    <button class="card-btn ${g.isFree ? 'free-btn' : ''}" onclick="handleGroup('${g.id}','${g.isFree}','${g.whatsappLink || ''}')">
+                                        ${g.isFree ? 'Join Now' : 'View Details'}
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                    applyFilters();
+                } else {
+                    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#6B7280;padding:40px;">Hakuna groups kwa sasa.</div>';
+                }
+            } catch (e) {
+                console.error('Error loading groups:', e);
+                grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#6B7280;padding:40px;">Error loading groups.</div>';
+            }
+        }
+
+        // =========================================================
+        // HANDLE GROUP CLICK
+        // =========================================================
+        function handleGroup(id, isFree, link) {
+            if (isFree === 'true') {
+                if (link) {
+                    window.open(link, '_blank');
+                } else {
+                    alert('WhatsApp link not available');
+                }
+            } else {
+                // Premium product - redirect to payment or show message
+                alert('Premium product. Payment integration active. Order will be processed.');
+            }
+        }
+
+        // =========================================================
+        // LOAD STATISTICS
+        // =========================================================
+        async function loadStatistics() {
+            try {
+                const res = await fetch(API_BASE_URL + '/statistics');
+                const data = await res.json();
+                if (data.success) {
+                    const stats = data.data;
+                    document.getElementById('statMembers').textContent = stats.members || 0;
+                    document.getElementById('statGroups').textContent = stats.groups || 0;
+                    document.getElementById('statPremium').textContent = stats.premium || 0;
+                    document.getElementById('statVerified').textContent = stats.verified || 0;
+                }
+            } catch (e) {
+                console.error('Error loading statistics:', e);
+            }
+        }
+
+        // =========================================================
+        // AUTH STATUS
+        // =========================================================
+        function checkAuthStatus() {
+            const token = localStorage.getItem('authToken');
+            const loginBtn = document.getElementById('navLoginBtn');
+            const signupBtn = document.getElementById('navSignupBtn');
+
+            if (token) {
+                const userData = localStorage.getItem('userData');
+                let userName = 'Dashboard';
+                try {
+                    if (userData) {
+                        const user = JSON.parse(userData);
+                        userName = user.fullName || user.displayName || 'Dashboard';
+                    }
+                } catch {}
+
+                loginBtn.innerHTML = `<i class="fas fa-user"></i> ${userName}`;
+                loginBtn.onclick = function() {
+                    window.location.href = '/dashboard';
+                };
+                signupBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout';
+                signupBtn.onclick = function() {
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('userData');
+                    localStorage.removeItem('rememberMe');
+                    window.location.reload();
+                };
+            } else {
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
+                loginBtn.onclick = function() {
+                    window.location.href = '/login';
+                };
+                signupBtn.innerHTML = '<i class="fas fa-user-plus"></i> Sign Up';
+                signupBtn.onclick = function() {
+                    window.location.href = '/signup';
+                };
+            }
+        }
+
+        // =========================================================
+        // INIT
+        // =========================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            if (localStorage.getItem('started')) {
+                loadGroups();
+                loadStatistics();
+            }
+            checkAuthStatus();
+        });
+
+        console.log('🚀 Pata Link WhatsApp Groups loaded');
+        console.log('📧 Support: dullamanyama0@gmail.com');
+        console.log('📱 Developer: +255 724 525 910');
+    </script>
+
+</body>
+</html>
