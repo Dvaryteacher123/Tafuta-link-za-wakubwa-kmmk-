@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Pata Link za WhatsApp Groups - Premium Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #07090e; color: #f8fafc; min-height: 100vh; overflow-x: hidden; display: flex; flex-direction: column; justify-content: space-between; }
+        
+        header { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 18px 32px; display: flex; justify-content: center; align-items: center; position: sticky; top: 0; z-index: 100; }
+        header h1 { font-size: 20px; font-weight: 800; color: #38bdf8; display: flex; gap: 10px; align-items: center; letter-spacing: -0.5px; }
+
+        .carousel-container { position: relative; width: 100%; max-width: 900px; height: 520px; margin: 40px auto; perspective: 1200px; display: flex; align-items: center; justify-content: center; user-select: none; }
+        .carousel-track { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; display: flex; align-items: center; justify-content: center; cursor: grab; }
+        .carousel-track:active { cursor: grabbing; }
+
+        .carousel-card { position: absolute; width: 320px; background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 24px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.5); transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s ease, filter 0.5s ease; display: flex; flex-direction: column; justify-content: space-between; opacity: 0; pointer-events: none; }
+
+        .carousel-card.active { transform: translateX(0) translateZ(150px) rotateY(0deg); opacity: 1; pointer-events: auto; z-index: 10; filter: drop-shadow(0 0 25px rgba(56, 189, 248, 0.3)); border-color: rgba(56, 189, 248, 0.4); }
+        .carousel-card.prev { transform: translateX(-230px) translateZ(0px) rotateY(25deg) scale(0.85); opacity: 0.6; pointer-events: auto; z-index: 5; filter: brightness(0.6); }
+        .carousel-card.next { transform: translateX(230px) translateZ(0px) rotateY(-25deg) scale(0.85); opacity: 0.6; pointer-events: auto; z-index: 5; filter: brightness(0.6); }
+        .carousel-card.hidden { transform: translateX(0) translateZ(-300px) scale(0.6); opacity: 0; pointer-events: none; z-index: 1; }
+
+        .card-media { width: 100%; height: 180px; background: #0f172a; position: relative; overflow: hidden; }
+        .card-media img, .card-media video { width: 100%; height: 100%; object-fit: cover; }
+        
+        .card-body { padding: 20px; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between; }
+        .card-body h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; color: #fff; }
+        .card-body p { color: #94a3b8; font-size: 13px; line-height: 1.4; margin-bottom: 14px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .price-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .price { font-size: 18px; font-weight: 800; color: #38bdf8; }
+        
+        .btn-buy { width: 100%; padding: 12px; background: linear-gradient(135deg, #0ea5e9, #2563eb); border: none; border-radius: 12px; color: #fff; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-buy:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(14, 165, 233, 0.6); }
+
+        .carousel-nav { display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 40px; }
+        .nav-btn { background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255,255,255,0.1); width: 45px; height: 45px; border-radius: 50%; color: #fff; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; backdrop-filter: blur(10px); }
+        .nav-btn:hover { background: #38bdf8; color: #0f172a; border-color: #38bdf8; }
+
+        .dots { display: flex; gap: 8px; align-items: center; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.2); cursor: pointer; transition: 0.3s; }
+        .dot.active { width: 24px; border-radius: 4px; background: #38bdf8; }
+
+        /* Checkout Modal */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal.show { display: flex; }
+        .modal-content { background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 30px; width: 90%; max-width: 400px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+        .modal-content h3 { margin-bottom: 8px; font-size: 20px; font-weight: 700; }
+        .form-group { margin-bottom: 16px; text-align: left; }
+        .form-group label { display: block; font-size: 12px; margin-bottom: 6px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-group input { width: 100%; padding: 12px 16px; background: #0f172a; border: 1px solid #334155; border-radius: 10px; color: #fff; font-size: 15px; outline: none; transition: 0.3s; }
+        .form-group input:focus { border-color: #38bdf8; }
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+        .btn-cancel { background: transparent; border: 1px solid #334155; color: #94a3b8; padding: 10px 18px; border-radius: 10px; cursor: pointer; font-weight: 600; }
+        .btn-submit { background: #10b981; border: none; color: #fff; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); }
+
+        footer { text-align: center; padding: 20px; font-size: 13px; color: #64748b; border-top: 1px solid rgba(255,255,255,0.05); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1><i class="fas fa-fire" style="color: #38bdf8;"></i> Pata Link za WhatsApp</h1>
+    </header>
+
+    <div class="carousel-container" id="carouselContainer">
+        <div class="carousel-track" id="carouselTrack">
+            <p style="color: #94a3b8; text-align:center;">Inapakia magroup...</p>
+        </div>
+    </div>
+
+    <div class="carousel-nav" id="carouselNav" style="display: none;">
+        <button class="nav-btn" id="prevBtn"><i class="fas fa-chevron-left"></i></button>
+        <div class="dots" id="dotsContainer"></div>
+        <button class="nav-btn" id="nextBtn"><i class="fas fa-chevron-right"></i></button>
+    </div>
+
+    <footer>
+        &copy; 2026 Pata Link Store. All rights reserved.
+    </footer>
+
+    <!-- Checkout Modal -->
+    <div class="modal" id="checkoutModal">
+        <div class="modal-content">
+            <h3>Lipa kupitia HarakaPay</h3>
+            <p id="modalItemTitle" style="font-size: 14px; color: #38bdf8; margin-bottom: 20px; font-weight: 600;"></p>
+            <form id="paymentForm">
+                <div class="form-group">
+                    <label>Namba ya Simu (M-Pesa / TigoPesa / Airtel)</label>
+                    <input type="text" id="payPhone" required placeholder="0712345678" />
+                </div>
+                <input type="hidden" id="payProductId" />
+                <input type="hidden" id="payAmount" />
+                <input type="hidden" id="payDescription" />
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeCheckout()">Ghairi</button>
+                    <button type="submit" class="btn-submit" id="payBtn">Lipa Sasa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCvQGF9i7EAcUz72-1EriDJzc7Mcxvq-r0",
+            authDomain: "pata-link-za-magroup-whatsapp.firebaseapp.com",
+            projectId: "pata-link-za-magroup-whatsapp",
+            storageBucket: "pata-link-za-magroup-whatsapp.firebasestorage.app",
+            messagingSenderId: "603411167221",
+            appId: "1:603411167221:web:67c1e724e1cc93299c92bc",
+            measurementId: "G-RZJ0E92YF7"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let products = [];
+        let currentIndex = 0;
+        let autoRotateInterval;
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        async function fetchProducts() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "products"));
+                products = [];
+                querySnapshot.forEach((docSnap) => {
+                    products.push({ id: docSnap.id, ...docSnap.data() });
+                });
+
+                if (products.length > 0) {
+                    document.getElementById('carouselNav').style.display = 'flex';
+                    renderCarousel();
+                    startAutoRotate();
+                } else {
+                    document.getElementById('carouselTrack').innerHTML = '<p style="color: #94a3b8;">Hakuna magroup yaliyowekwa bado.</p>';
+                }
+            } catch (e) {
+                console.error("Hitilafu:", e);
+                document.getElementById('carouselTrack').innerHTML = '<p style="color: #ef4444;">Imeshindikana kupakia data kutoka Firestore.</p>';
+            }
+        }
+
+        function renderCarousel() {
+            const track = document.getElementById('carouselTrack');
+            const dotsContainer = document.getElementById('dotsContainer');
+            
+            let html = '';
+            products.forEach((p, index) => {
+                let mediaHtml = `<img src="${p.imageUrl || 'https://via.placeholder.com/320x180?text=WhatsApp+Group'}" alt="${p.title}" />`;
+                if (p.videoUrl) {
+                    mediaHtml = `<video src="${p.videoUrl}" autoplay muted loop playsinline></video>`;
+                }
+
+                let cardClass = 'carousel-card';
+                if (index === currentIndex) cardClass += ' active';
+                else if (index === (currentIndex - 1 + products.length) % products.length) cardClass += ' prev';
+                else if (index === (currentIndex + 1) % products.length) cardClass += ' next';
+                else cardClass += ' hidden';
+
+                html += `
+                    <div class="${cardClass}" data-index="${index}">
+                        <div class="card-media">${mediaHtml}</div>
+                        <div class="card-body">
+                            <div>
+                                <h3>${p.title}</h3>
+                                <p>${p.description || 'Hakuna maelezo.'}</p>
+                            </div>
+                            <div>
+                                <div class="price-row">
+                                    <span class="price">TSh ${(p.price || 0).toLocaleString()}</span>
+                                </div>
+                                <button class="btn-buy" onclick="openCheckout('${p.id}', '${p.title.replace(/'/g, "\\'")}', ${p.price || 0})">
+                                    <i class="fas fa-bolt"></i> BUY NOW
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            track.innerHTML = html;
+
+            let dotsHtml = '';
+            products.forEach((_, index) => {
+                dotsHtml += `<div class="dot ${index === currentIndex ? 'active' : ''}" onclick="goToSlide(${index})"></div>`;
+            });
+            dotsContainer.innerHTML = dotsHtml;
+        }
+
+        window.goToSlide = function(index) {
+            currentIndex = index;
+            renderCarousel();
+            resetAutoRotate();
+        }
+
+        function nextSlide() {
+            currentIndex = (currentIndex + 1) % products.length;
+            renderCarousel();
+        }
+
+        function prevSlide() {
+            currentIndex = (currentIndex - 1 + products.length) % products.length;
+            renderCarousel();
+        }
+
+        document.getElementById('nextBtn').addEventListener('click', () => { nextSlide(); resetAutoRotate(); });
+        document.getElementById('prevBtn').addEventListener('click', () => { prevSlide(); resetAutoRotate(); });
+
+        const container = document.getElementById('carouselContainer');
+        container.addEventListener('mouseenter', stopAutoRotate);
+        container.addEventListener('mouseleave', startAutoRotate);
+
+        container.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+            stopAutoRotate();
+        }, {passive: true});
+
+        container.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+            startAutoRotate();
+        }, {passive: true});
+
+        function handleSwipe() {
+            if (touchEndX < touchStartX - 50) {
+                nextSlide();
+            } else if (touchEndX > touchStartX + 50) {
+                prevSlide();
+            }
+        }
+
+        function startAutoRotate() {
+            stopAutoRotate();
+            if(products.length > 1) {
+                autoRotateInterval = setInterval(() => {
+                    nextSlide();
+                }, 4000);
+            }
+        }
+
+        function stopAutoRotate() {
+            clearInterval(autoRotateInterval);
+        }
+
+        window.openCheckout = function(id, title, price) {
+            stopAutoRotate();
+            document.getElementById('checkoutModal').classList.add('show');
+            document.getElementById('modalItemTitle').textContent = title;
+            document.getElementById('payProductId').value = id;
+            document.getElementById('payAmount').value = price;
+            document.getElementById('payDescription').value = 'Malipo ya Group: ' + title;
+        }
+
+        window.closeCheckout = function() {
+            document.getElementById('checkoutModal').classList.remove('show');
+            startAutoRotate();
+        }
+
+        document.getElementById('paymentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const phone = document.getElementById('payPhone').value.trim();
+            const amount = document.getElementById('payAmount').value;
+            const description = document.getElementById('payDescription').value;
+            const productId = document.getElementById('payProductId').value;
+            const btn = document.getElementById('payBtn');
+
+            btn.textContent = 'Inatuma USSD Push...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/v1/collect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, amount, description, productId })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('✅ ' + data.message + '\nAngalia simu yako kuweka namba ya siri (PIN).');
+                    closeCheckout();
+                } else {
+                    alert('❌ Imeshindikana: ' + data.message);
+                }
+            } catch (err) {
+                alert('❌ Hitilafu ya mtandao wakati wa kuchakata malipo.');
+            } finally {
+                btn.textContent = 'Lipa Sasa';
+                btn.disabled = false;
+            }
+        });
+
+        fetchProducts();
+    </script>
+</body>
+</html>
