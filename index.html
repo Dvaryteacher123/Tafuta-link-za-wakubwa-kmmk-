@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Pata Link za WhatsApp - TikTok Style</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #000; color: #fff; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        
+        /* Navbar ya Juu */
+        header { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; left: 0; width: 100%; z-index: 100; }
+        header h1 { font-size: 16px; font-weight: 800; color: #38bdf8; display: flex; gap: 6px; align-items: center; }
+        
+        .header-nav { display: flex; align-items: center; gap: 8px; }
+        .nav-link-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 8px; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; transition: 0.3s; }
+        .nav-link-btn.whatsapp { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); color: #10b981; }
+
+        /* Reels Feed Container (TikTok Style) */
+        .reels-container { position: relative; width: 100%; height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
+        .reels-container::-webkit-scrollbar { display: none; }
+
+        .reel-card { position: relative; width: 100%; height: 100vh; scroll-snap-align: start; display: flex; align-items: flex-end; background: #0b0f19; overflow: hidden; }
+        .reel-media { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        .reel-media img, .reel-media video { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* Gradient Overlay kusomeka kwa maandishi */
+        .reel-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 40%, rgba(0,0,0,0.85) 75%, #000 100%); z-index: 2; }
+
+        /* Maelezo na Buttons za pembeni (TikTok Actions layout) */
+        .reel-content { position: relative; z-index: 3; width: 100%; padding: 24px 20px 80px 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .reel-info { max-width: 70%; }
+        .reel-info h3 { font-size: 20px; font-weight: 800; margin-bottom: 8px; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .reel-info p { font-size: 13px; color: #cbd5e1; line-height: 1.4; margin-bottom: 14px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+        
+        .reel-price { font-size: 18px; font-weight: 800; color: #38bdf8; margin-bottom: 12px; display: block; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+
+        .btn-buy-tiktok { background: linear-gradient(135deg, #0ea5e9, #2563eb); border: none; padding: 12px 24px; border-radius: 50px; color: #fff; font-weight: 700; font-size: 14px; cursor: pointer; box-shadow: 0 4px 20px rgba(14, 165, 233, 0.5); display: inline-flex; align-items: center; gap: 8px; transition: 0.3s; }
+        .btn-buy-tiktok:active { transform: scale(0.95); }
+
+        /* Upande wa kulia icons za TikTok style */
+        .reel-actions { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-bottom: 10px; }
+        .action-icon-btn { background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border: none; width: 45px; height: 45px; border-radius: 50%; color: #fff; font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+        .action-icon-btn:hover { background: rgba(56, 189, 248, 0.4); color: #38bdf8; }
+
+        /* Modals kubwa za Kisasa */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
+        .modal.show { display: flex; }
+        .modal-content { background: #1e293b; border: 1px solid rgba(255,255,255,0.12); border-radius: 24px; padding: 32px; width: 100%; max-width: 420px; box-shadow: 0 25px 60px rgba(0,0,0,0.6); }
+        .modal-content h3 { margin-bottom: 6px; font-size: 20px; font-weight: 800; color: #fff; }
+        .modal-content p.subtitle { color: #94a3b8; font-size: 13px; margin-bottom: 20px; }
+        
+        .form-group { margin-bottom: 16px; text-align: left; }
+        .form-group label { display: block; font-size: 11px; margin-bottom: 6px; color: #cbd5e1; font-weight: 600; text-transform: uppercase; }
+        .form-group input { width: 100%; padding: 12px 16px; background: #0f172a; border: 1px solid #334155; border-radius: 12px; color: #fff; font-size: 14px; outline: none; }
+        .form-group input:focus { border-color: #38bdf8; }
+        
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+        .btn-cancel { background: transparent; border: 1px solid #334155; color: #94a3b8; padding: 10px 18px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; }
+        .btn-submit { background: #10b981; border: none; color: #fff; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 13px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); }
+
+        /* Order item style */
+        .order-item-card { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .order-info h4 { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+        .order-info p { font-size: 11px; color: #94a3b8; }
+        .badge-status { padding: 3px 8px; border-radius: 50px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+        .badge-completed { background: rgba(16,185,129,0.2); color: #10b981; }
+        .badge-pending { background: rgba(245,158,11,0.2); color: #f59e0b; }
+        .btn-access-link { background: #0284c7; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1><i class="fas fa-fire" style="color: #38bdf8;"></i> Pata Link</h1>
+        <div class="header-nav">
+            <a href="https://whatsapp.com/channel/0029VbBaKXB1t90W0S24QU0m" target="_blank" class="nav-link-btn whatsapp">
+                <i class="fab fa-whatsapp"></i> Channel
+            </a>
+            <button class="nav-link-btn" onclick="openMyOrdersModal()">
+                <i class="fas fa-receipt"></i> Oda
+            </button>
+            <button class="nav-link-btn" onclick="openAuthModal('login')">Login</button>
+            <button class="nav-link-btn" style="background: #38bdf8; color: #0f172a; border-color: #38bdf8;" onclick="openAuthModal('signup')">Signup</button>
+        </div>
+    </header>
+
+    <!-- TikTok Style Reels Container -->
+    <div class="reels-container" id="reelsContainer">
+        <div style="display: flex; align-items: center; justify-content: center; height: 100vh; color: #94a3b8;">
+            Inapakia magroup...
+        </div>
+    </div>
+
+    <!-- Checkout Modal (HarakaPay) -->
+    <div class="modal" id="checkoutModal">
+        <div class="modal-content">
+            <h3>Lipa kupitia HarakaPay</h3>
+            <p class="subtitle" id="modalItemTitle"></p>
+            <form id="paymentForm">
+                <div class="form-group">
+                    <label>Namba ya Simu (M-Pesa / TigoPesa / Airtel)</label>
+                    <input type="text" id="payPhone" required placeholder="0712345678" />
+                </div>
+                <input type="hidden" id="payProductId" />
+                <input type="hidden" id="payAmount" />
+                <input type="hidden" id="payDescription" />
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeCheckout()">Ghairi</button>
+                    <button type="submit" class="btn-submit" id="payBtn">Lipa Sasa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- My Orders Modal -->
+    <div class="modal" id="myOrdersModal">
+        <div class="modal-content" style="max-width: 460px;">
+            <h3>Oda Zangu</h3>
+            <p class="subtitle">Weka namba ya simu uliyotumia kulipia kuona link yako.</p>
+            <div class="form-group">
+                <label>Namba Yako ya Simu</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="searchOrderPhone" placeholder="0712345678" />
+                    <button type="button" class="btn-submit" onclick="fetchMyOrders()" style="padding: 0 14px;">Tafuta</button>
+                </div>
+            </div>
+            <div id="myOrdersResult" style="max-height: 220px; overflow-y: auto; margin-top: 12px;"></div>
+            <div class="modal-actions" style="margin-top: 16px;">
+                <button type="button" class="btn-cancel" onclick="closeMyOrdersModal()">Funga</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login / Signup Big Modal -->
+    <div class="modal" id="authModal">
+        <div class="modal-content">
+            <h3 id="authModalTitle">Login kwenye Akaunti</h3>
+            <p class="subtitle" id="authModalSubtitle">Ingiza taarifa zako.</p>
+            <form id="authForm">
+                <div class="form-group" id="nameGroup" style="display: none;">
+                    <label>Jina Lako Kamili</label>
+                    <input type="text" id="authName" placeholder="John Doe" />
+                </div>
+                <div class="form-group">
+                    <label>Barua Pepe (Email)</label>
+                    <input type="email" id="authEmail" required placeholder="example@gmail.com" />
+                </div>
+                <div class="form-group">
+                    <label>Neno la Siri (Password)</label>
+                    <input type="password" id="authPassword" required placeholder="********" />
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeAuthModal()">Ghairi</button>
+                    <button type="submit" class="btn-submit" id="authSubmitBtn">Wasilisha</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCvQGF9i7EAcUz72-1EriDJzc7Mcxvq-r0",
+            authDomain: "pata-link-za-magroup-whatsapp.firebaseapp.com",
+            projectId: "pata-link-za-magroup-whatsapp",
+            storageBucket: "pata-link-za-magroup-whatsapp.firebasestorage.app",
+            messagingSenderId: "603411167221",
+            appId: "1:603411167221:web:67c1e724e1cc93299c92bc",
+            measurementId: "G-RZJ0E92YF7"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function fetchProducts() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "products"));
+                let products = [];
+                querySnapshot.forEach((docSnap) => {
+                    products.push({ id: docSnap.id, ...docSnap.data() });
+                });
+
+                const container = document.getElementById('reelsContainer');
+                if (products.length === 0) {
+                    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#94a3b8;">Hakuna magroup yaliyowekwa bado.</div>';
+                    return;
+                }
+
+                let html = '';
+                products.forEach((p) => {
+                    let mediaHtml = `<img src="${p.imageUrl || 'https://via.placeholder.com/400x800?text=WhatsApp+Group'}" alt="${p.title}" />`;
+                    if (p.videoUrl) {
+                        mediaHtml = `<video src="${p.videoUrl}" autoplay muted loop playsinline></video>`;
+                    }
+
+                    html += `
+                        <div class="reel-card">
+                            <div class="reel-media">${mediaHtml}</div>
+                            <div class="reel-overlay"></div>
+                            <div class="reel-content">
+                                <div class="reel-info">
+                                    <h3>${p.title}</h3>
+                                    <p>${p.description || 'Hakuna maelezo.'}</p>
+                                    <span class="reel-price">TSh ${(p.price || 0).toLocaleString()}</span>
+                                    <button class="btn-buy-tiktok" onclick="openCheckout('${p.id}', '${p.title.replace(/'/g, "\\'")}', ${p.price || 0})">
+                                        <i class="fas fa-bolt"></i> BUY NOW
+                                    </button>
+                                </div>
+                                <div class="reel-actions">
+                                    <button class="action-icon-btn" onclick="alert('Imependwa!')"><i class="fas fa-heart"></i></button>
+                                    <button class="action-icon-btn" onclick="openMyOrdersModal()"><i class="fas fa-receipt"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch (e) {
+                console.error(e);
+                document.getElementById('reelsContainer').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#ef4444;">Imeshindikana kupakia data.</div>';
+            }
+        }
+
+        window.openCheckout = function(id, title, price) {
+            document.getElementById('checkoutModal').classList.add('show');
+            document.getElementById('modalItemTitle').textContent = title;
+            document.getElementById('payProductId').value = id;
+            document.getElementById('payAmount').value = price;
+            document.getElementById('payDescription').value = 'Malipo ya Group: ' + title;
+        }
+
+        window.closeCheckout = function() {
+            document.getElementById('checkoutModal').classList.remove('show');
+        }
+
+        window.openMyOrdersModal = function() {
+            document.getElementById('myOrdersModal').classList.add('show');
+        }
+
+        window.closeMyOrdersModal = function() {
+            document.getElementById('myOrdersModal').classList.remove('show');
+        }
+
+        window.fetchMyOrders = async function() {
+            const phone = document.getElementById('searchOrderPhone').value.trim();
+            const resultDiv = document.getElementById('myOrdersResult');
+            if(!phone) { alert('Weka namba ya simu.'); return; }
+            resultDiv.innerHTML = '<p style="color:#94a3b8; text-align:center;">Inatafuta...</p>';
+
+            try {
+                const q = query(collection(db, "orders"), where("phone", "==", phone));
+                const querySnapshot = await getDocs(q);
+                let html = '';
+                let ordersList = [];
+                querySnapshot.forEach(docSnap => {
+                    ordersList.push({ id: docSnap.id, ...docSnap.data() });
+                });
+
+                if(ordersList.length === 0) {
+                    resultDiv.innerHTML = '<p style="color:#ef4444; text-align:center;">Hakuna oda.</p>';
+                    return;
+                }
+
+                for(let o of ordersList) {
+                    let isCompleted = o.status === 'completed';
+                    let whatsappLink = '#';
+                    if(o.productId) {
+                        const prodSnap = await getDocs(collection(db, "products"));
+                        prodSnap.forEach(pDoc => {
+                            if(pDoc.id === o.productId) { whatsappLink = pDoc.data().whatsappLink || '#'; }
+                        });
+                    }
+
+                    html += `
+                        <div class="order-item-card">
+                            <div class="order-info">
+                                <h4>${o.description || 'Group'}</h4>
+                                <p>TSh ${(o.amount || 0).toLocaleString()}</p>
+                                <span class="badge-status ${isCompleted ? 'badge-completed' : 'badge-pending'}">
+                                    ${isCompleted ? 'Imekamilika' : 'Inasubiri'}
+                                </span>
+                                ${isCompleted && whatsappLink !== '#' ? `<br><a href="${whatsappLink}" target="_blank" class="btn-access-link"><i class="fab fa-whatsapp"></i> Ingia Kwenye Group</a>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+                resultDiv.innerHTML = html;
+            } catch(e) {
+                resultDiv.innerHTML = '<p style="color:#ef4444; text-align:center;">Hitilafu.</p>';
+            }
+        }
+
+        window.openAuthModal = function(type) {
+            const modal = document.getElementById('authModal');
+            const title = document.getElementById('authModalTitle');
+            const subtitle = document.getElementById('authModalSubtitle');
+            const nameGroup = document.getElementById('nameGroup');
+            const submitBtn = document.getElementById('authSubmitBtn');
+
+            modal.classList.add('show');
+            if(type === 'signup') {
+                title.textContent = 'Fungua Akaunti';
+                subtitle.textContent = 'Jiunge nasi sasa.';
+                nameGroup.style.display = 'block';
+                submitBtn.textContent = 'Jiandikishe';
+            } else {
+                title.textContent = 'Login kwenye Akaunti';
+                subtitle.textContent = 'Ingiza taarifa zako.';
+                nameGroup.style.display = 'none';
+                submitBtn.textContent = 'Ingia';
+            }
+        }
+
+        window.closeAuthModal = function() {
+            document.getElementById('authModal').classList.remove('show');
+        }
+
+        document.getElementById('authForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('✅ Imefanikiwa!');
+            closeAuthModal();
+        });
+
+        document.getElementById('paymentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const phone = document.getElementById('payPhone').value.trim();
+            const amount = document.getElementById('payAmount').value;
+            const description = document.getElementById('payDescription').value;
+            const productId = document.getElementById('payProductId').value;
+            const btn = document.getElementById('payBtn');
+
+            btn.textContent = 'Inatuma USSD...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/v1/collect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, amount, description, productId })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('✅ ' + data.message + '\nAngalia simu yako kuweka PIN.');
+                    closeCheckout();
+                } else {
+                    alert('❌ ' + data.message);
+                }
+            } catch (err) {
+                alert('❌ Hitilafu ya mtandao.');
+            } finally {
+                btn.textContent = 'Lipa Sasa';
+                btn.disabled = false;
+            }
+        });
+
+        fetchProducts();
+    </script>
+</body>
+</html>
+
