@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pata Link za WhatsApp Groups</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #0f172a; color: #f8fafc; min-height: 100vh; }
+        header { background: #1e293b; padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; }
+        header h1 { font-size: 20px; font-weight: 700; color: #38bdf8; display: flex; gap: 10px; align-items: center; }
+        .container { max-width: 1200px; margin: 32px auto; padding: 0 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
+        .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; }
+        .card img { width: 100%; height: 160px; object-fit: cover; background: #334155; }
+        .card-body { padding: 20px; }
+        .card-body h3 { font-size: 18px; margin-bottom: 8px; }
+        .card-body p { color: #94a3b8; font-size: 14px; margin-bottom: 16px; }
+        .price { font-size: 16px; font-weight: 700; color: #38bdf8; margin-bottom: 16px; }
+        .btn-buy { width: 100%; padding: 12px; background: #0284c7; border: none; border-radius: 8px; color: #fff; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .btn-buy:hover { background: #0369a1; }
+        
+        /* Modal ya Kulipia */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal.show { display: flex; }
+        .modal-content { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 30px; width: 90%; max-width: 400px; }
+        .modal-content h3 { margin-bottom: 16px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 13px; margin-bottom: 6px; color: #94a3b8; }
+        .form-group input { width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #fff; }
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+        .btn-cancel { background: transparent; border: 1px solid #334155; color: #94a3b8; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+        .btn-submit { background: #10b981; border: none; color: #fff; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1><i class="fas fa-users"></i> Pata Link za WhatsApp</h1>
+        <a href="/admin" style="color: #94a3b8; text-decoration: none; font-size: 14px;"><i class="fas fa-lock"></i> Admin Login</a>
+    </header>
+
+    <div class="container">
+        <h2 style="margin-bottom: 24px; font-size: 22px;">Magroup Yanayopatikana</h2>
+        <div class="grid" id="productsGrid">
+            <p style="color: #94a3b8;">Inapakia magroup...</p>
+        </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div class="modal" id="checkoutModal">
+        <div class="modal-content">
+            <h3>Lipa kwa HarakaPay (USSD Push)</h3>
+            <p id="modalItemTitle" style="font-size: 14px; color: #38bdf8; margin-bottom: 16px;"></p>
+            <form id="paymentForm">
+                <div class="form-group">
+                    <label>Namba ya Simu (Mfano: 0712345678)</label>
+                    <input type="text" id="payPhone" required placeholder="07XXXXXXXX" />
+                </div>
+                <input type="hidden" id="payProductId" />
+                <input type="hidden" id="payAmount" />
+                <input type="hidden" id="payDescription" />
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeCheckout()">Ghairi</button>
+                    <button type="submit" class="btn-submit" id="payBtn">Lipa Sasa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCvQGF9i7EAcUz72-1EriDJzc7Mcxvq-r0",
+            authDomain: "pata-link-za-magroup-whatsapp.firebaseapp.com",
+            projectId: "pata-link-za-magroup-whatsapp",
+            storageBucket: "pata-link-za-magroup-whatsapp.firebasestorage.app",
+            messagingSenderId: "603411167221",
+            appId: "1:603411167221:web:67c1e724e1cc93299c92bc",
+            measurementId: "G-RZJ0E92YF7"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function loadProducts() {
+            const grid = document.getElementById('productsGrid');
+            try {
+                const querySnapshot = await getDocs(collection(db, "products"));
+                let html = '';
+                querySnapshot.forEach((docSnap) => {
+                    const p = docSnap.data();
+                    const id = docSnap.id;
+                    html += `
+                        <div class="card">
+                            <img src="${p.imageUrl || 'https://via.placeholder.com/300x160?text=WhatsApp+Group'}" alt="Group">
+                            <div class="card-body">
+                                <h3>${p.title}</h3>
+                                <p>${p.description || 'Hakuna maelezo.'}</p>
+                                <div class="price">TSh ${(p.price || 0).toLocaleString()}</div>
+                                <button class="btn-buy" onclick="openCheckout('${id}', '${p.title}', ${p.price}, '${p.whatsappLink || '#'}')">Pata Link</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                grid.innerHTML = html || '<p style="color: #94a3b8;">Hakuna magroup yaliyowekwa kwa sasa.</p>';
+            } catch (e) {
+                console.error(e);
+                grid.innerHTML = '<p style="color: #ef4444;">Imeshindikana kupakia bidhaa.</p>';
+            }
+        }
+
+        window.openCheckout = function(id, title, price, link) {
+            document.getElementById('checkoutModal').classList.add('show');
+            document.getElementById('modalItemTitle').textContent = title;
+            document.getElementById('payProductId').value = id;
+            document.getElementById('payAmount').value = price;
+            document.getElementById('payDescription').value = 'Malipo ya Group: ' + title;
+        }
+
+        window.closeCheckout = function() {
+            document.getElementById('checkoutModal').classList.remove('show');
+        }
+
+        document.getElementById('paymentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const phone = document.getElementById('payPhone').value.trim();
+            const amount = document.getElementById('payAmount').value;
+            const description = document.getElementById('payDescription').value;
+            const productId = document.getElementById('payProductId').value;
+            const btn = document.getElementById('payBtn');
+
+            btn.textContent = 'Inatuma USSD Push...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/v1/collect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, amount, description, productId })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('✅ ' + data.message + '\nAngalia simu yako kuweka namba ya siri (PIN).');
+                    closeCheckout();
+                } else {
+                    alert('❌ Imeshindikana: ' + data.message);
+                }
+            } catch (err) {
+                alert('❌ Hitilafu ya mtandao.');
+            } finally {
+                btn.textContent = 'Lipa Sasa';
+                btn.disabled = false;
+            }
+        });
+
+        loadProducts();
+    </script>
+</body>
+</html>
+
