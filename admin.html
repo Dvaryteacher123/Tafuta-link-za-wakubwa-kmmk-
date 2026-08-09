@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Panel - Pata Link WhatsApp Groups</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #0a0a0a; color: #ffffff; min-height: 100vh; }
+        :root { --primary: #4F46E5; --green: #10B981; --red: #EF4444; --yellow: #F59E0B; --glass: rgba(255,255,255,0.05); --glass-border: rgba(255,255,255,0.1); }
+
+        .support-btn { position: fixed; bottom: 30px; left: 30px; background: linear-gradient(135deg, #4F46E5, #7C3AED); border: none; border-radius: 50px; padding: 12px 20px; color: #fff; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 20px rgba(79,70,229,0.4); z-index: 999; transition: 0.3s; text-decoration: none; font-size: 14px; }
+        .support-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(79,70,229,0.6); }
+        @media (max-width: 768px) { .support-btn { bottom: 100px; left: 20px; padding: 10px 16px; font-size: 12px; } .support-btn span { display: none; } }
+
+        .dashboard { display: block; }
+
+        .nav-bar { display: flex; justify-content: space-between; align-items: center; padding: 14px 32px; background: rgba(10,10,10,0.95); border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 100; backdrop-filter: blur(20px); flex-wrap: wrap; gap: 8px; }
+        .nav-bar .logo { font-size: 22px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+        .nav-bar .logo i { color: var(--primary); }
+        .nav-bar .user { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+        .nav-bar .user .name { font-weight: 600; font-size: 14px; }
+        .nav-bar .user .role { color: var(--primary); font-size: 12px; font-weight: 600; background: rgba(79,70,229,0.15); padding: 2px 12px; border-radius: 50px; }
+        .nav-bar .user .online-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--green); }
+        .nav-bar .user .online-badge i { font-size: 8px; }
+        .nav-bar .user .logout-btn { padding: 8px 20px; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; color: var(--red); cursor: pointer; font-weight: 600; font-size: 13px; transition: 0.3s; }
+        .nav-bar .user .logout-btn:hover { background: rgba(239,68,68,0.25); }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 24px 32px; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; margin-bottom: 32px; }
+        .stat-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 16px; padding: 20px 24px; transition: 0.3s; }
+        .stat-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+        .stat-card .icon { float: right; font-size: 24px; color: var(--primary); opacity: 0.6; }
+        .stat-card .number { font-size: 28px; font-weight: 800; display: block; }
+        .stat-card .label { color: #a0a0b0; font-size: 13px; }
+
+        .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--glass-border); margin-bottom: 24px; flex-wrap: wrap; }
+        .tab { padding: 10px 24px; background: none; border: none; color: #a0a0b0; cursor: pointer; font-size: 14px; font-weight: 500; border-bottom: 2px solid transparent; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
+        .tab:hover { color: #fff; }
+        .tab.active { color: #fff; border-bottom-color: var(--primary); }
+        .tab i { font-size: 16px; }
+
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+        .card h3 { font-size: 18px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+        .card h3 i { color: var(--primary); }
+
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th { text-align: left; padding: 12px; color: #a0a0b0; font-weight: 600; border-bottom: 1px solid var(--glass-border); white-space: nowrap; }
+        td { padding: 12px; border-bottom: 1px solid var(--glass-border); color: #d0d0d0; }
+        tr:hover td { background: var(--glass); }
+
+        .badge { padding: 4px 12px; border-radius: 50px; font-size: 12px; font-weight: 600; display: inline-block; }
+        .badge-success { background: rgba(16,185,129,0.2); color: var(--green); }
+        .badge-danger { background: rgba(239,68,68,0.2); color: var(--red); }
+        .badge-warning { background: rgba(245,158,11,0.2); color: var(--yellow); }
+        .badge-info { background: rgba(79,70,229,0.2); color: var(--primary); }
+
+        .btn { padding: 6px 14px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; transition: 0.3s; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: #4338CA; transform: scale(1.05); }
+        .btn-danger { background: var(--red); color: #fff; }
+        .btn-danger:hover { background: #DC2626; transform: scale(1.05); }
+        .btn-sm { padding: 4px 10px; font-size: 12px; }
+        .btn-outline { background: transparent; border: 1px solid var(--glass-border); color: #a0a0b0; }
+        .btn-outline:hover { background: var(--glass); }
+
+        .form-group-dash { margin-bottom: 16px; }
+        .form-group-dash label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+        .form-group-dash input, .form-group-dash select, .form-group-dash textarea { width: 100%; padding: 10px 14px; background: #1a1a2e; border: 1px solid var(--glass-border); border-radius: 8px; color: #fff; font-size: 14px; transition: 0.3s; }
+        .form-group-dash input:focus, .form-group-dash select:focus, .form-group-dash textarea:focus { outline: none; border-color: var(--primary); }
+        .form-group-dash textarea { resize: vertical; min-height: 80px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+        .checkbox-group { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .checkbox-group input { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
+
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal.show { display: flex; }
+        .modal-content { background: #1a1a2e; border: 1px solid var(--glass-border); border-radius: 16px; padding: 32px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; }
+        .modal-content h3 { font-size: 20px; font-weight: 700; margin-bottom: 12px; }
+        .modal-content p { color: #a0a0b0; margin-bottom: 20px; }
+        .modal-actions { display: flex; gap: 12px; justify-content: flex-end; }
+
+        .online-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+        .online-dot.online { background: var(--green); box-shadow: 0 0 8px rgba(16,185,129,0.5); }
+        .online-dot.offline { background: #6B7280; }
+
+        .phone-col { font-family: 'Courier New', monospace; font-size: 13px; color: #10B981; }
+
+        @media (max-width: 768px) {
+            .container { padding: 16px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .form-row { grid-template-columns: 1fr; }
+            .tabs { flex-wrap: nowrap; overflow-x: auto; }
+            .tab { padding: 8px 16px; font-size: 13px; white-space: nowrap; }
+        }
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SUPPORT -->
+    <a href="mailto:dullamanyama0@gmail.com" class="support-btn"><i class="fas fa-headset"></i> <span>Support</span></a>
+
+    <!-- DASHBOARD -->
+    <div class="dashboard" id="dashboard">
+
+        <nav class="nav-bar">
+            <div class="logo"><i class="fas fa-comments"></i> Pata Link</div>
+            <div class="user">
+                <span class="name">Super Admin</span>
+                <span class="role">Admin</span>
+                <span class="online-badge"><i class="fas fa-circle"></i> <span id="onlineCount">0</span> online</span>
+                <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+        </nav>
+
+        <div class="container">
+
+            <!-- Stats -->
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card"><div class="icon"><i class="fas fa-users"></i></div><span class="number" id="statUsers">0</span><span class="label">Total Users</span></div>
+                <div class="stat-card"><div class="icon"><i class="fas fa-boxes"></i></div><span class="number" id="statProducts">0</span><span class="label">Total Products</span></div>
+                <div class="stat-card"><div class="icon"><i class="fas fa-shopping-cart"></i></div><span class="number" id="statOrders">0</span><span class="label">Total Orders</span></div>
+                <div class="stat-card"><div class="icon"><i class="fas fa-money-bill-wave"></i></div><span class="number" id="statRevenue">TSh 0</span><span class="label">Total Revenue</span></div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" data-tab="products" onclick="switchTab('products')"><i class="fas fa-boxes"></i> Products</button>
+                <button class="tab" data-tab="users" onclick="switchTab('users')"><i class="fas fa-users"></i> Users</button>
+                <button class="tab" data-tab="orders" onclick="switchTab('orders')"><i class="fas fa-shopping-cart"></i> Orders</button>
+                <button class="tab" data-tab="add" onclick="switchTab('add')"><i class="fas fa-plus"></i> Add Product</button>
+            </div>
+
+            <!-- Products Tab -->
+            <div class="tab-content active" id="tab-products">
+                <div class="card">
+                    <h3><i class="fas fa-boxes"></i> All Products</h3>
+                    <div class="table-responsive">
+                        <table>
+                            <thead><tr><th>Title</th><th>Category</th><th>Price</th><th>Type</th><th>Status</th><th>Actions</th></tr></thead>
+                            <tbody id="productsTable"><tr><td colspan="6" class="text-center">Hakuna taarifa kwa sasa.</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Tab (WITH PHONE NUMBERS) -->
+            <div class="tab-content" id="tab-users">
+                <div class="card">
+                    <h3><i class="fas fa-users"></i> All Users</h3>
+                    <div class="table-responsive">
+                        <table>
+                            <thead><tr><th>Name</th><th>Email</th><th>📱 Phone</th><th>Status</th></tr></thead>
+                            <tbody id="usersTable"><tr><td colspan="4" class="text-center">Hakuna taarifa kwa sasa.</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders Tab -->
+            <div class="tab-content" id="tab-orders">
+                <div class="card">
+                    <h3><i class="fas fa-shopping-cart"></i> All Orders</h3>
+                    <div class="table-responsive">
+                        <table>
+                            <thead><tr><th>Order ID</th><th>Product</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+                            <tbody id="ordersTable"><tr><td colspan="5" class="text-center">Hakuna taarifa kwa sasa.</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Product Tab (WITH WHATSAPP GROUP URL + IMAGE + VIDEO) -->
+            <div class="tab-content" id="tab-add">
+                <div class="card">
+                    <h3><i class="fas fa-plus"></i> Add WhatsApp Group</h3>
+                    <form id="productForm">
+                        <div class="form-row">
+                            <div class="form-group-dash">
+                                <label>Group Title *</label>
+                                <input type="text" id="pTitle" required placeholder="e.g. Tech WhatsApp Group" />
+                            </div>
+                            <div class="form-group-dash">
+                                <label>Category *</label>
+                                <input type="text" id="pCategory" required placeholder="e.g. Technology" />
+                            </div>
+                        </div>
+                        <div class="form-group-dash">
+                            <label>Description *</label>
+                            <textarea id="pDescription" rows="3" placeholder="Describe the WhatsApp group..."></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group-dash">
+                                <label>Price (TSh)</label>
+                                <input type="number" id="pPrice" value="0" min="0" />
+                            </div>
+                            <div class="form-group-dash">
+                                <label>🔗 WhatsApp Group URL *</label>
+                                <input type="url" id="pWhatsapp" required placeholder="https://chat.whatsapp.com/..." />
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group-dash">
+                                <label>🖼️ Image URL</label>
+                                <input type="url" id="pImage" placeholder="https://example.com/image.jpg" />
+                            </div>
+                            <div class="form-group-dash">
+                                <label>🎬 Video URL</label>
+                                <input type="url" id="pVideo" placeholder="https://example.com/video.mp4" />
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group-dash" style="display:flex; flex-wrap:wrap; gap:16px; padding-top:8px;">
+                                <label class="checkbox-group"><input type="checkbox" id="pFree" /> Free</label>
+                                <label class="checkbox-group"><input type="checkbox" id="pPremium" /> Premium</label>
+                                <label class="checkbox-group"><input type="checkbox" id="pFeatured" /> Featured</label>
+                                <label class="checkbox-group"><input type="checkbox" id="pTrending" /> Trending</label>
+                            </div>
+                        </div>
+                        <input type="hidden" id="pEditId" />
+                        <div style="display:flex; gap:12px; margin-top:12px; flex-wrap:wrap;">
+                            <button type="submit" class="btn btn-primary" id="productSubmitBtn"><i class="fas fa-save"></i> Add Group</button>
+                            <button type="button" class="btn btn-outline" onclick="resetProductForm()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Confirm</h3>
+            <p id="modalMessage">Are you sure?</p>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-danger" id="modalConfirmBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- JAVASCRIPT -->
+    <!-- ========================================================= -->
+    <script>
+        // =========================================================
+        // API
+        // =========================================================
+        const API = window.location.origin + '/api';
+        let token = localStorage.getItem('adminToken');
+        let modalCallback = null;
+
+        // =========================================================
+        // LOGOUT
+        // =========================================================
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            localStorage.clear();
+            token = null;
+            window.location.reload();
+        });
+
+        // =========================================================
+        // SWITCH TABS
+        // =========================================================
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
+            document.getElementById('tab-' + tab).classList.add('active');
+        }
+
+        // =========================================================
+        // LOAD DASHBOARD
+        // =========================================================
+        async function loadDashboard() {
+            if (!token) {
+                const dummyToken = 'admin_direct_access_token_' + Date.now();
+                localStorage.setItem('adminToken', dummyToken);
+                token = dummyToken;
+                localStorage.setItem('adminData', JSON.stringify({
+                    fullName: 'Super Admin',
+                    email: 'dullamanyama0@gmail.com',
+                    role: 'admin'
+                }));
+            }
+            
+            await loadUserData();
+            await loadStats();
+            await loadProducts();
+            await loadUsers();
+            await loadOrders();
+        }
+
+        function loadUserData() {
+            const data = localStorage.getItem('adminData');
+            if (data) {
+                try {
+                    const user = JSON.parse(data);
+                    document.querySelector('.nav-bar .name').textContent = user.fullName || 'Super Admin';
+                } catch {}
+            }
+        }
+
+        // =========================================================
+        // LOAD STATS
+        // =========================================================
+        async function loadStats() {
+            try {
+                const res = await fetch(API + '/admin/dashboard', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('statUsers').textContent = data.data.users?.total || 0;
+                    document.getElementById('statProducts').textContent = data.data.products?.total || 0;
+                    document.getElementById('statOrders').textContent = data.data.orders?.total || 0;
+                    document.getElementById('statRevenue').textContent = 'TSh ' + (data.data.revenue?.total || 0).toLocaleString();
+                    document.getElementById('onlineCount').textContent = data.data.online?.count || 0;
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // =========================================================
+        // LOAD PRODUCTS
+        // =========================================================
+        async function loadProducts() {
+            try {
+                const res = await fetch(API + '/admin/products', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const data = await res.json();
+                const tbody = document.getElementById('productsTable');
+                if (data.success && data.data.length > 0) {
+                    tbody.innerHTML = data.data.map(p => `
+                        <tr>
+                            <td><strong>${p.title}</strong></td>
+                            <td>${p.category}</td>
+                            <td>TSh ${(p.price||0).toLocaleString()}</td>
+                            <td>${p.isFree ? '<span class="badge badge-success">FREE</span>' : p.isPremium ? '<span class="badge badge-warning">PREMIUM</span>' : '-'}</td>
+                            <td><span class="badge ${p.isVisible ? 'badge-success' : 'badge-danger'}">${p.isVisible ? 'Visible' : 'Hidden'}</span></td>
+                            <td>
+                                <button class="btn btn-primary btn-sm" onclick="editProduct('${p.id}')"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">Hakuna taarifa kwa sasa.</td></tr>';
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // =========================================================
+        // LOAD USERS (WITH PHONE NUMBERS)
+        // =========================================================
+        async function loadUsers() {
+            try {
+                const res = await fetch(API + '/admin/users', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const data = await res.json();
+                const tbody = document.getElementById('usersTable');
+                if (data.success && data.data.length > 0) {
+                    tbody.innerHTML = data.data.map(u => `
+                        <tr>
+                            <td>
+                                <span class="online-dot ${u.isOnline ? 'online' : 'offline'}"></span>
+                                ${u.fullName || '-'}
+                            </td>
+                            <td>${u.email}</td>
+                            <td class="phone-col">${u.phone || '-'}</td>
+                            <td><span class="badge ${u.status === 'suspended' ? 'badge-danger' : 'badge-success'}">${u.status || 'active'}</span></td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center">Hakuna taarifa kwa sasa.</td></tr>';
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // =========================================================
+        // LOAD ORDERS
+        // =========================================================
+        async function loadOrders() {
+            try {
+                const res = await fetch(API + '/admin/orders', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const data = await res.json();
+                const tbody = document.getElementById('ordersTable');
+                if (data.success && data.data.length > 0) {
+                    tbody.innerHTML = data.data.map(o => `
+                        <tr>
+                            <td><code>${o.id}</code></td>
+                            <td>${o.productTitle}</td>
+                            <td>TSh ${(o.amount||0).toLocaleString()}</td>
+                            <td><span class="badge ${o.paymentStatus === 'completed' ? 'badge-success' : 'badge-warning'}">${o.paymentStatus || 'pending'}</span></td>
+                            <td>${new Date(o.createdAt).toLocaleDateString()}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center">Hakuna taarifa kwa sasa.</td></tr>';
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // =========================================================
+        // ADD/EDIT PRODUCT
+        // =========================================================
+        document.getElementById('productForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const id = document.getElementById('pEditId').value;
+            const data = {
+                title: document.getElementById('pTitle').value.trim(),
+                category: document.getElementById('pCategory').value.trim(),
+                description: document.getElementById('pDescription').value.trim(),
+                price: parseFloat(document.getElementById('pPrice').value) || 0,
+                whatsappLink: document.getElementById('pWhatsapp').value.trim(),
+                imageUrl: document.getElementById('pImage').value.trim() || null,
+                videoUrl: document.getElementById('pVideo').value.trim() || null,
+                isFree: document.getElementById('pFree').checked,
+                isPremium: document.getElementById('pPremium').checked,
+                isFeatured: document.getElementById('pFeatured').checked,
+                isTrending: document.getElementById('pTrending').checked
+            };
+
+            const url = id ? API + '/admin/products/' + id : API + '/admin/products';
+            const method = id ? 'PUT' : 'POST';
+
+            try {
+                const res = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    resetProductForm();
+                    loadProducts();
+                    alert(id ? '✅ Group updated!' : '✅ Group added!');
+                } else {
+                    alert('❌ ' + (result.message || 'Failed to save'));
+                }
+            } catch (err) {
+                alert('❌ Network error');
+            }
+        });
+
+        function editProduct(id) {
+            fetch(API + '/products/' + id)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const p = data.data;
+                        document.getElementById('pEditId').value = p.id;
+                        document.getElementById('pTitle').value = p.title;
+                        document.getElementById('pCategory').value = p.category;
+                        document.getElementById('pDescription').value = p.description;
+                        document.getElementById('pPrice').value = p.price;
+                        document.getElementById('pWhatsapp').value = p.whatsappLink;
+                        document.getElementById('pImage').value = p.imageUrl || '';
+                        document.getElementById('pVideo').value = p.videoUrl || '';
+                        document.getElementById('pFree').checked = p.isFree || false;
+                        document.getElementById('pPremium').checked = p.isPremium || false;
+                        document.getElementById('pFeatured').checked = p.isFeatured || false;
+                        document.getElementById('pTrending').checked = p.isTrending || false;
+                        document.getElementById('productSubmitBtn').innerHTML = '<i class="fas fa-save"></i> Update Group';
+                        switchTab('add');
+                    }
+                });
+        }
+
+        function resetProductForm() {
+            document.getElementById('productForm').reset();
+            document.getElementById('pEditId').value = '';
+            document.getElementById('productSubmitBtn').innerHTML = '<i class="fas fa-save"></i> Add Group';
+            document.getElementById('pFree').checked = false;
+            document.getElementById('pPremium').checked = false;
+            document.getElementById('pFeatured').checked = false;
+            document.getElementById('pTrending').checked = false;
+        }
+
+        // =========================================================
+        // DELETE PRODUCT
+        // =========================================================
+        function deleteProduct(id) {
+            showModal('Delete Group', 'Are you sure?', async () => {
+                try {
+                    const res = await fetch(API + '/admin/products/' + id, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': 'Bearer ' + token }
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        loadProducts();
+                        alert('✅ Group deleted!');
+                    }
+                } catch (e) { alert('❌ Error deleting'); }
+            });
+        }
+
+        // =========================================================
+        // MODAL
+        // =========================================================
+        function showModal(title, message, callback) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = message;
+            document.getElementById('modal').classList.add('show');
+            modalCallback = callback;
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('show');
+            modalCallback = null;
+        }
+
+        document.getElementById('modalConfirmBtn').addEventListener('click', () => {
+            if (modalCallback) modalCallback();
+            closeModal();
+        });
+
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeModal();
+        });
+
+        // =========================================================
+        // INIT
+        // =========================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboard();
+        });
+
+        console.log('🛠️ Admin Panel loaded');
+        console.log('📧 Admin: dullamanyama0@gmail.com');
+        console.log('📱 Phone numbers visible in Users tab');
+        console.log('🔗 WhatsApp group URLs in Add Product tab');
+    </script>
+
+</body>
+</html>
