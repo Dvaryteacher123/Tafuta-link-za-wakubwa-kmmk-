@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Pata Link za WhatsApp - TikTok Style</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        /* RESET & BASE */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #000;
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HEADER - TikTok style with glassmorphism */
+        header {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            transition: 0.3s;
+        }
+        header h1 {
+            font-size: 18px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            letter-spacing: -0.5px;
+        }
+        header h1 i {
+            -webkit-text-fill-color: #38bdf8;
+            font-size: 20px;
+        }
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .nav-link-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 6px 12px;
+            border-radius: 30px;
+            color: #e2e8f0;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(4px);
+        }
+        .nav-link-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        .nav-link-btn.whatsapp {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.3);
+            color: #10b981;
+        }
+        .nav-link-btn.whatsapp:hover {
+            background: rgba(16, 185, 129, 0.3);
+        }
+        .nav-link-btn.primary {
+            background: #38bdf8;
+            border-color: #38bdf8;
+            color: #0f172a;
+        }
+        .nav-link-btn.primary:hover {
+            background: #7dd3fc;
+            border-color: #7dd3fc;
+        }
+
+        /* REELS CONTAINER - Full screen vertical snap */
+        .reels-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scrollbar-width: none;
+            padding-top: 64px;
+        }
+        .reels-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* REEL CARD - Full screen immersive */
+        .reel-card {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 64px);
+            scroll-snap-align: start;
+            display: flex;
+            align-items: flex-end;
+            background: #0b0f19;
+            overflow: hidden;
+        }
+        .reel-media {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .reel-media img,
+        .reel-media video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* GRADIENT OVERLAY - Premium dark fade */
+        .reel-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            background:
+                linear-gradient(180deg,
+                    rgba(0, 0, 0, 0.2) 0%,
+                    transparent 35%,
+                    rgba(0, 0, 0, 0.6) 70%,
+                    rgba(0, 0, 0, 0.9) 100%);
+        }
+
+        /* REEL CONTENT - Bottom layout with info + actions */
+        .reel-content {
+            position: relative;
+            z-index: 3;
+            width: 100%;
+            padding: 20px 20px 90px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .reel-info {
+            max-width: 72%;
+        }
+        .reel-info h3 {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 6px;
+            color: #fff;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+            letter-spacing: -0.3px;
+        }
+        .reel-info .desc {
+            font-size: 13px;
+            color: #cbd5e1;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+        }
+        .reel-price {
+            font-size: 20px;
+            font-weight: 800;
+            color: #38bdf8;
+            display: block;
+            margin-bottom: 12px;
+            text-shadow: 0 2px 12px rgba(56, 189, 248, 0.3);
+        }
+
+        /* BUY BUTTON - Premium gradient with glow */
+        .btn-buy-tiktok {
+            background: linear-gradient(135deg, #0ea5e9, #7c3aed);
+            border: none;
+            padding: 14px 28px;
+            border-radius: 50px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 30px rgba(14, 165, 233, 0.4);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            letter-spacing: 0.3px;
+        }
+        .btn-buy-tiktok:active {
+            transform: scale(0.95);
+        }
+        .btn-buy-tiktok i {
+            font-size: 16px;
+        }
+
+        /* RIGHT ACTION BUTTONS - TikTok style floating */
+        .reel-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 6px;
+        }
+        .action-icon-btn {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        .action-icon-btn:hover {
+            background: rgba(56, 189, 248, 0.2);
+            border-color: rgba(56, 189, 248, 0.3);
+            color: #38bdf8;
+            transform: scale(1.05);
+        }
+        .action-icon-btn:active {
+            transform: scale(0.9);
+        }
+        .action-icon-btn .label {
+            font-size: 9px;
+            font-weight: 600;
+            margin-top: 2px;
+            color: #94a3b8;
+        }
+
+        /* MODALS - Premium glass design */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+            animation: modalFadeIn 0.35s ease;
+        }
+        .modal.show {
+            display: flex;
+        }
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.96) translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal-content {
+            background: rgba(20, 27, 45, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 28px;
+            padding: 32px 28px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+        }
+        .modal-content h3 {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 4px;
+            color: #fff;
+            letter-spacing: -0.3px;
+        }
+        .modal-content .subtitle {
+            color: #94a3b8;
+            font-size: 13px;
+            margin-bottom: 22px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            margin-bottom: 5px;
+            color: #94a3b8;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 13px 16px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+        .btn-cancel {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            padding: 11px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: 0.3s;
+        }
+        .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+            color: #fff;
+            padding: 11px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 13px;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+            transition: 0.3s;
+        }
+        .btn-submit:active {
+            transform: scale(0.96);
+        }
+
+        /* ORDERS LIST */
+        .order-item-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+        .order-info h4 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 2px;
+        }
+        .order-info p {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        .badge-status {
+            padding: 3px 10px;
+            border-radius: 50px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            display: inline-block;
+        }
+        .badge-completed {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        .badge-pending {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+        .btn-access-link {
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 4px;
+            border: 1px solid rgba(56, 189, 248, 0.15);
+            transition: 0.3s;
+        }
+        .btn-access-link:hover {
+            background: rgba(56, 189, 248, 0.25);
+        }
+
+        /* SEARCH ROW */
+        .search-row {
+            display: flex;
+            gap: 8px;
+        }
+        .search-row input {
+            flex: 1;
+        }
+        .search-row .btn-submit {
+            padding: 0 16px;
+            white-space: nowrap;
+        }
+
+        /* SCROLLBAR STYLING for order list */
+        #myOrdersResult {
+            max-height: 220px;
+            overflow-y: auto;
+            margin-top: 12px;
+        }
+        #myOrdersResult::-webkit-scrollbar {
+            width: 3px;
+        }
+        #myOrdersResult::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #myOrdersResult::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
+        }
+
+        /* RESPONSIVE TWEAKS */
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 15px;
+            }
+            .nav-link-btn {
+                font-size: 10px;
+                padding: 5px 10px;
+            }
+            .reel-info h3 {
+                font-size: 18px;
+            }
+            .reel-info .desc {
+                font-size: 12px;
+                -webkit-line-clamp: 2;
+            }
+            .reel-price {
+                font-size: 17px;
+            }
+            .btn-buy-tiktok {
+                padding: 11px 20px;
+                font-size: 13px;
+            }
+            .reel-content {
+                padding: 16px 16px 80px 16px;
+            }
+            .action-icon-btn {
+                width: 42px;
+                height: 42px;
+                font-size: 17px;
+            }
+            .modal-content {
+                padding: 24px 18px;
+            }
+        }
+        @media (max-width: 380px) {
+            .reel-info {
+                max-width: 65%;
+            }
+            .reel-info h3 {
+                font-size: 16px;
+            }
+            .btn-buy-tiktok {
+                padding: 10px 16px;
+                font-size: 12px;
+            }
+            .action-icon-btn {
+                width: 38px;
+                height: 38px;
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <h1><i class="fas fa-fire"></i> Pata Link</h1>
+        <div class="header-nav">
+            <a href="https://whatsapp.com/channel/0029VbBaKXB1t90W0S24QU0m" target="_blank" class="nav-link-btn whatsapp">
+                <i class="fab fa-whatsapp"></i> Channel
+            </a>
+            <button class="nav-link-btn" onclick="openMyOrdersModal()">
+                <i class="fas fa-receipt"></i> Oda
+            </button>
+            <button class="nav-link-btn" onclick="openAuthModal('login')">Login</button>
+            <button class="nav-link-btn primary" onclick="openAuthModal('signup')">Signup</button>
+        </div>
+    </header>
+
+    <!-- REELS CONTAINER -->
+    <div class="reels-container" id="reelsContainer">
+        <div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#475569;font-weight:500;font-size:15px;">
+            <i class="fas fa-spinner fa-spin" style="margin-right:10px;color:#38bdf8;"></i> Inapakia...
+        </div>
+    </div>
+
+    <!-- CHECKOUT MODAL -->
+    <div class="modal" id="checkoutModal">
+        <div class="modal-content">
+            <h3>Lipa kwa HarakaPay</h3>
+            <p class="subtitle" id="modalItemTitle"></p>
+            <form id="paymentForm">
+                <div class="form-group">
+                    <label>Namba ya Simu</label>
+                    <input type="text" id="payPhone" required placeholder="0712345678" />
+                </div>
+                <input type="hidden" id="payProductId" />
+                <input type="hidden" id="payAmount" />
+                <input type="hidden" id="payDescription" />
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeCheckout()">Ghairi</button>
+                    <button type="submit" class="btn-submit" id="payBtn">Lipa Sasa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MY ORDERS MODAL -->
+    <div class="modal" id="myOrdersModal">
+        <div class="modal-content" style="max-width:480px;">
+            <h3>Oda Zangu</h3>
+            <p class="subtitle">Weka namba ya simu uliyotumia kulipia.</p>
+            <div class="form-group">
+                <label>Namba yako</label>
+                <div class="search-row">
+                    <input type="text" id="searchOrderPhone" placeholder="0712345678" />
+                    <button type="button" class="btn-submit" onclick="fetchMyOrders()">Tafuta</button>
+                </div>
+            </div>
+            <div id="myOrdersResult"></div>
+            <div class="modal-actions" style="margin-top:16px;">
+                <button type="button" class="btn-cancel" onclick="closeMyOrdersModal()">Funga</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUTH MODAL -->
+    <div class="modal" id="authModal">
+        <div class="modal-content">
+            <h3 id="authModalTitle">Ingia kwenye Akaunti</h3>
+            <p class="subtitle" id="authModalSubtitle">Weka taarifa zako.</p>
+            <form id="authForm">
+                <div class="form-group" id="nameGroup" style="display:none;">
+                    <label>Jina Kamili</label>
+                    <input type="text" id="authName" placeholder="John Doe" />
+                </div>
+                <div class="form-group">
+                    <label>Barua Pepe</label>
+                    <input type="email" id="authEmail" required placeholder="example@gmail.com" />
+                </div>
+                <div class="form-group">
+                    <label>Neno la Siri</label>
+                    <input type="password" id="authPassword" required placeholder="••••••••" />
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeAuthModal()">Ghairi</button>
+                    <button type="submit" class="btn-submit" id="authSubmitBtn">Wasilisha</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- FIREBASE & APP LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCvQGF9i7EAcUz72-1EriDJzc7Mcxvq-r0",
+            authDomain: "pata-link-za-magroup-whatsapp.firebaseapp.com",
+            projectId: "pata-link-za-magroup-whatsapp",
+            storageBucket: "pata-link-za-magroup-whatsapp.firebasestorage.app",
+            messagingSenderId: "603411167221",
+            appId: "1:603411167221:web:67c1e724e1cc93299c92bc",
+            measurementId: "G-RZJ0E92YF7"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // --- FETCH PRODUCTS & RENDER REELS ---
+        async function fetchProducts() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "products"));
+                let products = [];
+                querySnapshot.forEach((docSnap) => {
+                    products.push({ id: docSnap.id, ...docSnap.data() });
+                });
+
+                const container = document.getElementById('reelsContainer');
+                if (products.length === 0) {
+                    container.innerHTML = `
+                        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;color:#475569;gap:12px;padding:20px;text-align:center;">
+                            <i class="fas fa-box-open" style="font-size:40px;color:#334155;"></i>
+                            <p style="font-weight:500;">Hakuna magroup yaliyowekwa bado.</p>
+                            <p style="font-size:13px;color:#334155;">Admin ataanza kuongeza hivi karibuni.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                products.forEach((p) => {
+                    let mediaHtml = `<img src="${p.imageUrl || 'https://via.placeholder.com/400x800/1e293b/475569?text=WhatsApp+Group'}" alt="${p.title}" loading="lazy" />`;
+                    if (p.videoUrl) {
+                        mediaHtml = `<video src="${p.videoUrl}" autoplay muted loop playsinline></video>`;
+                    }
+
+                    html += `
+                        <div class="reel-card">
+                            <div class="reel-media">${mediaHtml}</div>
+                            <div class="reel-overlay"></div>
+                            <div class="reel-content">
+                                <div class="reel-info">
+                                    <h3>${p.title}</h3>
+                                    <p class="desc">${p.description || 'Hakuna maelezo.'}</p>
+                                    <span class="reel-price">TSh ${(p.price || 0).toLocaleString()}</span>
+                                    <button class="btn-buy-tiktok" onclick="openCheckout('${p.id}', '${p.title.replace(/'/g, "\\'")}', ${p.price || 0})">
+                                        <i class="fas fa-bolt"></i> NUNUA SASA
+                                    </button>
+                                </div>
+                                <div class="reel-actions">
+                                    <button class="action-icon-btn" onclick="alert('👍 Imependwa!')">
+                                        <i class="fas fa-heart"></i>
+                                    </button>
+                                    <button class="action-icon-btn" onclick="openMyOrdersModal()">
+                                        <i class="fas fa-receipt"></i>
+                                    </button>
+                                    <button class="action-icon-btn" onclick="alert('💬 Wasiliana nasi kwa msaada.')">
+                                        <i class="fas fa-share"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch (e) {
+                console.error(e);
+                document.getElementById('reelsContainer').innerHTML = `
+                    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;color:#ef4444;gap:10px;">
+                        <i class="fas fa-exclamation-triangle" style="font-size:32px;"></i>
+                        <p>Imeshindikana kupakia data.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // --- GLOBAL FUNCTIONS (exposed to window) ---
+
+        window.openCheckout = function(id, title, price) {
+            document.getElementById('checkoutModal').classList.add('show');
+            document.getElementById('modalItemTitle').textContent = title + ' — TSh ' + price.toLocaleString();
+            document.getElementById('payProductId').value = id;
+            document.getElementById('payAmount').value = price;
+            document.getElementById('payDescription').value = 'Malipo ya Group: ' + title;
+        };
+
+        window.closeCheckout = function() {
+            document.getElementById('checkoutModal').classList.remove('show');
+        };
+
+        window.openMyOrdersModal = function() {
+            document.getElementById('myOrdersModal').classList.add('show');
+            document.getElementById('myOrdersResult').innerHTML = '';
+        };
+
+        window.closeMyOrdersModal = function() {
+            document.getElementById('myOrdersModal').classList.remove('show');
+        };
+
+        window.fetchMyOrders = async function() {
+            const phone = document.getElementById('searchOrderPhone').value.trim();
+            const resultDiv = document.getElementById('myOrdersResult');
+            if (!phone) {
+                resultDiv.innerHTML = '<p style="color:#f59e0b;font-size:13px;text-align:center;">Tafadhali weka namba ya simu.</p>';
+                return;
+            }
+            resultDiv.innerHTML = '<p style="color:#94a3b8;text-align:center;font-size:13px;"><i class="fas fa-spinner fa-spin"></i> Inatafuta...</p>';
+
+            try {
+                const q = query(collection(db, "orders"), where("phone", "==", phone));
+                const querySnapshot = await getDocs(q);
+                let ordersList = [];
+                querySnapshot.forEach(docSnap => {
+                    ordersList.push({ id: docSnap.id, ...docSnap.data() });
+                });
+
+                if (ordersList.length === 0) {
+                    resultDiv.innerHTML = '<p style="color:#94a3b8;text-align:center;font-size:13px;">Hakuna oda zilizopatikana kwa namba hii.</p>';
+                    return;
+                }
+
+                let html = '';
+                for (let o of ordersList) {
+                    let isCompleted = o.status === 'completed';
+                    let whatsappLink = '#';
+                    if (o.productId) {
+                        const prodSnap = await getDocs(collection(db, "products"));
+                        prodSnap.forEach(pDoc => {
+                            if (pDoc.id === o.productId) {
+                                whatsappLink = pDoc.data().whatsappLink || '#';
+                            }
+                        });
+                    }
+
+                    html += `
+                        <div class="order-item-card">
+                            <div class="order-info">
+                                <h4>${o.description || 'WhatsApp Group'}</h4>
+                                <p>TSh ${(o.amount || 0).toLocaleString()} · ${o.date || ''}</p>
+                                <span class="badge-status ${isCompleted ? 'badge-completed' : 'badge-pending'}">
+                                    ${isCompleted ? '✅ Imekamilika' : '⏳ Inasubiri'}
+                                </span>
+                                ${isCompleted && whatsappLink !== '#' ? `<br><a href="${whatsappLink}" target="_blank" class="btn-access-link"><i class="fab fa-whatsapp"></i> Fungua Group</a>` : ''}
+                                ${!isCompleted ? '<p style="font-size:11px;color:#f59e0b;margin-top:4px;">Thibitisha malipo kwenye simu yako.</p>' : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+                resultDiv.innerHTML = html;
+            } catch (e) {
+                resultDiv.innerHTML = '<p style="color:#ef4444;text-align:center;font-size:13px;">Hitilafu ya mtandao.</p>';
+            }
+        };
+
+        window.openAuthModal = function(type) {
+            const modal = document.getElementById('authModal');
+            const title = document.getElementById('authModalTitle');
+            const subtitle = document.getElementById('authModalSubtitle');
+            const nameGroup = document.getElementById('nameGroup');
+            const submitBtn = document.getElementById('authSubmitBtn');
+
+            modal.classList.add('show');
+            if (type === 'signup') {
+                title.textContent = 'Fungua Akaunti';
+                subtitle.textContent = 'Jiunge nasi kwa dakika chache.';
+                nameGroup.style.display = 'block';
+                submitBtn.textContent = 'Jiandikishe';
+            } else {
+                title.textContent = 'Ingia kwenye Akaunti';
+                subtitle.textContent = 'Weka barua pepe na neno la siri.';
+                nameGroup.style.display = 'none';
+                submitBtn.textContent = 'Ingia';
+            }
+        };
+
+        window.closeAuthModal = function() {
+            document.getElementById('authModal').classList.remove('show');
+        };
+
+        // --- FORM HANDLERS ---
+
+        document.getElementById('authForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('✅ Umefanikiwa kuingia!');
+            closeAuthModal();
+        });
+
+        document.getElementById('paymentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const phone = document.getElementById('payPhone').value.trim();
+            const amount = document.getElementById('payAmount').value;
+            const description = document.getElementById('payDescription').value;
+            const productId = document.getElementById('payProductId').value;
+            const btn = document.getElementById('payBtn');
+
+            if (!phone || phone.length < 10) {
+                alert('Tafadhali weka namba sahihi ya simu.');
+                return;
+            }
+
+            btn.textContent = 'Inatuma...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/v1/collect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, amount, description, productId })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('✅ ' + data.message + '\nAngalia simu yako na thibitisha malipo.');
+                    closeCheckout();
+                } else {
+                    alert('❌ ' + (data.message || 'Hitilafu imetokea. Jaribu tena.'));
+                }
+            } catch (err) {
+                alert('❌ Hitilafu ya mtandao. Hakikisha umeunganishwa.');
+            } finally {
+                btn.textContent = 'Lipa Sasa';
+                btn.disabled = false;
+            }
+        });
+
+        // --- INIT ---
+        fetchProducts();
+
+        // Auto-refresh every 15 seconds for demo
+        setInterval(fetchProducts, 15000);
+    </script>
+</body>
+  </html>
