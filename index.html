@@ -1,0 +1,2259 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Pata Link za WhatsApp - Ultra Large Cards</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #0f172a;
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            background: #000;
+        }
+
+        /* ===== VIDEO BACKGROUND (fixed) ===== */
+        #bgVideo {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            background: #000;
+        }
+        #bgVideo video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translateX(-50%) translateY(-50%);
+            object-fit: cover;
+            opacity: 0.8;
+        }
+        .bg-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1;
+        }
+
+        /* ===== ENTRY SCREEN (full overlay) ===== */
+        #entryScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: transparent;
+            pointer-events: all;
+        }
+        #entryScreen .entry-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.55);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            z-index: 2;
+            pointer-events: none;
+        }
+        #entryScreen .entry-overlay h1 {
+            font-size: clamp(32px, 8vw, 72px);
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 0 4px 30px rgba(0,0,0,0.4);
+            margin-bottom: 12px;
+            letter-spacing: -1px;
+            pointer-events: none;
+        }
+        #entryScreen .entry-overlay h1 span {
+            background: linear-gradient(135deg, #0ea5e9, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        #entryScreen .entry-overlay p {
+            font-size: clamp(16px, 2.5vw, 28px);
+            color: rgba(255,255,255,0.85);
+            margin-bottom: 30px;
+            font-weight: 400;
+            text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+            pointer-events: none;
+        }
+        #entryScreen .entry-overlay .btn-get-started {
+            padding: 18px 50px;
+            font-size: clamp(18px, 2vw, 24px);
+            font-weight: 700;
+            background: linear-gradient(135deg, #0ea5e9, #7c3aed);
+            border: none;
+            border-radius: 60px;
+            color: #fff;
+            cursor: pointer;
+            box-shadow: 0 8px 40px rgba(14, 165, 233, 0.4);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: 0.5px;
+            pointer-events: auto;
+            position: relative;
+            z-index: 3;
+        }
+        #entryScreen .entry-overlay .btn-get-started:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 50px rgba(14, 165, 233, 0.5);
+        }
+        #entryScreen .entry-overlay .btn-get-started:active {
+            transform: scale(0.95);
+        }
+        #entryScreen .entry-overlay .btn-get-started i {
+            font-size: 20px;
+        }
+        #entryScreen .entry-overlay .sub-text {
+            margin-top: 20px;
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            pointer-events: none;
+        }
+
+        /* ===== MAIN CONTENT (on top of video) ===== */
+        #mainContent {
+            display: none;
+            flex-direction: column;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+        #mainContent.show {
+            display: flex;
+        }
+
+        /* HEADER - Glass with blur */
+        header {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 14px 24px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-shrink: 0;
+            gap: 12px;
+        }
+        header .brand {
+            font-size: 26px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #0ea5e9, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        header .brand i {
+            -webkit-text-fill-color: #0ea5e9;
+            font-size: 28px;
+        }
+
+        .header-center {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            max-width: 600px;
+            min-width: 200px;
+        }
+        .header-center .search-box {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            padding: 0 20px;
+            flex: 1;
+            transition: 0.3s;
+        }
+        .header-center .search-box:focus-within {
+            border-color: #0ea5e9;
+            background: rgba(255, 255, 255, 0.25);
+        }
+        .header-center .search-box i {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 18px;
+        }
+        .header-center .search-box input {
+            border: none;
+            background: transparent;
+            padding: 14px 14px;
+            font-size: 16px;
+            color: #fff;
+            outline: none;
+            width: 100%;
+            font-family: 'Inter', sans-serif;
+        }
+        .header-center .search-box input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 400;
+        }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .nav-link-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 10px 18px;
+            border-radius: 50px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            backdrop-filter: blur(10px);
+        }
+        .nav-link-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        .nav-link-btn.whatsapp {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+        .nav-link-btn.whatsapp:hover {
+            background: rgba(16, 185, 129, 0.3);
+        }
+        .nav-link-btn.primary {
+            background: #0ea5e9;
+            border-color: #0ea5e9;
+            color: #fff;
+            box-shadow: 0 2px 12px rgba(14, 165, 233, 0.25);
+        }
+        .nav-link-btn.primary:hover {
+            background: #38bdf8;
+            border-color: #38bdf8;
+            box-shadow: 0 4px 20px rgba(14, 165, 233, 0.35);
+        }
+        .nav-link-btn.lang-btn {
+            background: transparent;
+            border-color: transparent;
+            font-weight: 700;
+            color: #0ea5e9;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .nav-link-btn.lang-btn:hover {
+            background: rgba(14, 165, 233, 0.1);
+        }
+
+        /* ===== NOTIFICATION BELL ===== */
+        .notification-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        .notification-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 10px 16px;
+            border-radius: 50px;
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+        .notification-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        .notification-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #ef4444;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5px;
+            border: 2px solid rgba(0,0,0,0.3);
+            display: none;
+        }
+        .notification-badge.show {
+            display: flex;
+        }
+
+        /* Notification Dropdown */
+        .notification-dropdown {
+            position: absolute;
+            top: calc(100% + 12px);
+            right: 0;
+            background: rgba(20, 27, 45, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            width: 360px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 12px 0;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            display: none;
+            z-index: 200;
+            animation: dropdownFade 0.3s ease;
+        }
+        .notification-dropdown.show {
+            display: block;
+        }
+        @keyframes dropdownFade {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .notification-dropdown::-webkit-scrollbar {
+            width: 4px;
+        }
+        .notification-dropdown::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .notification-dropdown::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
+        }
+        .notification-dropdown .notif-header {
+            padding: 8px 20px 12px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .notification-dropdown .notif-header .mark-read {
+            font-size: 12px;
+            font-weight: 600;
+            color: #0ea5e9;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+        .notification-dropdown .notif-header .mark-read:hover {
+            text-decoration: underline;
+        }
+        .notification-item {
+            padding: 12px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .notification-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        .notification-item.unread {
+            border-left: 3px solid #0ea5e9;
+        }
+        .notification-item .notif-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 2px;
+        }
+        .notification-item .notif-body {
+            font-size: 13px;
+            color: #94a3b8;
+            line-height: 1.4;
+        }
+        .notification-item .notif-time {
+            font-size: 11px;
+            color: #475569;
+            margin-top: 4px;
+            display: block;
+        }
+        .notification-empty {
+            padding: 30px 20px;
+            text-align: center;
+            color: #475569;
+            font-size: 14px;
+        }
+        .notification-empty i {
+            font-size: 30px;
+            display: block;
+            margin-bottom: 10px;
+            color: #334155;
+        }
+
+        /* ===== ZOOM CONTROLS ===== */
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 6px 14px 6px 18px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .zoom-controls label {
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .zoom-controls label i {
+            font-size: 14px;
+            color: #0ea5e9;
+        }
+        .zoom-controls input[type="range"] {
+            width: 100px;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            outline: none;
+            transition: 0.3s;
+        }
+        .zoom-controls input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0ea5e9, #7c3aed);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(14, 165, 233, 0.3);
+        }
+        .zoom-controls input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0ea5e9, #7c3aed);
+            cursor: pointer;
+            border: none;
+        }
+        .zoom-controls .zoom-value {
+            font-size: 13px;
+            font-weight: 700;
+            color: #0ea5e9;
+            min-width: 32px;
+            text-align: center;
+        }
+        .zoom-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+        }
+        .zoom-btn:hover {
+            background: rgba(14, 165, 233, 0.2);
+            border-color: #0ea5e9;
+            color: #0ea5e9;
+        }
+
+        /* 3D CURVED CONTAINER - ULTRA LARGE */
+        .arc-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 2000px;
+            padding: 20px 30px 40px 30px;
+            min-height: 82vh;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .arc-track {
+            position: relative;
+            width: 100%;
+            max-width: 1300px;
+            height: 820px;
+            transform-style: preserve-3d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+            transform-origin: center center;
+        }
+
+        /* CARD - Glass effect with dark background */
+        .card-3d {
+            position: absolute;
+            width: 850px;
+            height: 470px;
+            background: rgba(20, 27, 45, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 44px;
+            overflow: hidden;
+            box-shadow: 0 30px 50px rgba(0, 0, 0, 0.3), 0 8px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.65s cubic-bezier(0.23, 1, 0.32, 1);
+            transform-style: preserve-3d;
+            will-change: transform, opacity, filter;
+            cursor: grab;
+            display: flex;
+            flex-direction: row;
+            backface-visibility: hidden;
+        }
+        .card-3d:active {
+            cursor: grabbing;
+        }
+
+        .card-3d .card-media {
+            width: 74%;
+            height: 100%;
+            background: #0b0f19;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .card-3d .card-media img,
+        .card-3d .card-media video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-3d .card-body {
+            width: 26%;
+            padding: 26px 24px 24px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: rgba(20, 27, 45, 0.9);
+        }
+        .card-3d .card-body .card-text {
+            flex: 1;
+        }
+        .card-3d .card-body h3 {
+            font-size: 26px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 8px;
+            letter-spacing: -0.3px;
+            line-height: 1.2;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .card-3d .card-body .desc {
+            font-size: 16px;
+            color: #94a3b8;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 14px;
+            text-shadow: 0 1px 8px rgba(0,0,0,0.2);
+        }
+        .card-3d .card-body .price {
+            font-size: 28px;
+            font-weight: 800;
+            color: #38bdf8;
+            margin-bottom: 16px;
+            text-shadow: 0 2px 12px rgba(56, 189, 248, 0.2);
+        }
+        .card-3d .card-body .btn-buy-3d {
+            width: 100%;
+            padding: 18px 0;
+            background: linear-gradient(135deg, #0ea5e9, #7c3aed);
+            border: none;
+            border-radius: 60px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 6px 25px rgba(14, 165, 233, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .card-3d .card-body .btn-buy-3d:active {
+            transform: scale(0.96);
+        }
+
+        /* POSITIONS - ULTRA LARGE */
+        .card-3d.pos-0 {
+            transform: translateX(0px) translateY(0px) translateZ(200px) rotateY(-4deg) scale(1);
+            opacity: 1;
+            z-index: 10;
+            filter: blur(0px);
+            box-shadow: 0 70px 100px rgba(0, 0, 0, 0.3), 0 0 70px rgba(14, 165, 233, 0.1);
+            border-color: rgba(14, 165, 233, 0.15);
+        }
+        .card-3d.pos-1 {
+            transform: translateX(260px) translateY(110px) translateZ(100px) rotateY(-10deg) scale(0.88);
+            opacity: 0.7;
+            z-index: 7;
+            filter: blur(0.8px);
+            box-shadow: 0 40px 60px rgba(0, 0, 0, 0.2);
+            border-color: rgba(255, 255, 255, 0.04);
+        }
+        .card-3d.pos-2 {
+            transform: translateX(440px) translateY(250px) translateZ(0px) rotateY(-14deg) scale(0.76);
+            opacity: 0.42;
+            z-index: 4;
+            filter: blur(2px);
+            box-shadow: 0 35px 50px rgba(0, 0, 0, 0.15);
+        }
+        .card-3d.pos--1 {
+            transform: translateX(-260px) translateY(110px) translateZ(100px) rotateY(-2deg) scale(0.88);
+            opacity: 0.7;
+            z-index: 7;
+            filter: blur(0.8px);
+            box-shadow: 0 40px 60px rgba(0, 0, 0, 0.2);
+            border-color: rgba(255, 255, 255, 0.04);
+        }
+        .card-3d.pos--2 {
+            transform: translateX(-440px) translateY(250px) translateZ(0px) rotateY(2deg) scale(0.76);
+            opacity: 0.42;
+            z-index: 4;
+            filter: blur(2px);
+            box-shadow: 0 35px 50px rgba(0, 0, 0, 0.15);
+        }
+        .card-3d.pos-hidden {
+            transform: translateX(0px) translateY(500px) translateZ(-400px) scale(0.5);
+            opacity: 0;
+            z-index: 0;
+            filter: blur(10px);
+            pointer-events: none;
+        }
+
+        /* NAVIGATION - Glass */
+        .arc-nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 28px;
+            margin: 8px 0 18px 0;
+            flex-shrink: 0;
+        }
+        .arc-nav .nav-btn {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+        }
+        .arc-nav .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(14, 165, 233, 0.3);
+        }
+        .arc-nav .nav-btn:active {
+            transform: scale(0.92);
+        }
+        .arc-nav .dots {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .arc-nav .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .arc-nav .dot.active {
+            width: 34px;
+            border-radius: 6px;
+            background: #0ea5e9;
+        }
+
+        /* ===== ABOUT SECTION ===== */
+        .about-section {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 30px 24px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .about-section .about-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .about-section h2 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+        .about-section h2 i {
+            color: #0ea5e9;
+            margin-right: 10px;
+        }
+        .about-section p {
+            font-size: 16px;
+            color: #94a3b8;
+            line-height: 1.7;
+            margin-bottom: 8px;
+        }
+        .about-section .highlight {
+            color: #38bdf8;
+            font-weight: 600;
+        }
+        .about-section .platform-badges {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+        .about-section .platform-badges span {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 6px 20px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .about-section .platform-badges span i {
+            font-size: 16px;
+        }
+        .about-section .platform-badges .wa {
+            color: #10b981;
+        }
+        .about-section .platform-badges .tg {
+            color: #0088cc;
+        }
+
+        /* FOOTER - Glass */
+        .footer-support {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 16px 24px;
+            text-align: center;
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.7);
+            flex-shrink: 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px 28px;
+        }
+        .footer-support a {
+            color: #38bdf8;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .footer-support a:hover {
+            text-decoration: underline;
+        }
+        .footer-support i {
+            margin-right: 6px;
+        }
+
+        /* MODALS - Dark glass */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(14px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+            animation: modalFadeIn 0.35s ease;
+        }
+        .modal.show {
+            display: flex;
+        }
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.96) translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        .modal-content {
+            background: rgba(20, 27, 45, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 36px;
+            padding: 40px 36px;
+            width: 100%;
+            max-width: 520px;
+            box-shadow: 0 50px 90px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+        }
+        .modal-content h3 {
+            font-size: 26px;
+            font-weight: 800;
+            margin-bottom: 6px;
+            color: #fff;
+            letter-spacing: -0.3px;
+        }
+        .modal-content .subtitle {
+            color: #94a3b8;
+            font-size: 15px;
+            margin-bottom: 28px;
+        }
+        .form-group {
+            margin-bottom: 18px;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 6px;
+            color: #94a3b8;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 18px;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.08);
+        }
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 28px;
+        }
+        .btn-cancel {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #94a3b8;
+            padding: 14px 24px;
+            border-radius: 16px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            transition: 0.3s;
+        }
+        .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+            color: #fff;
+            padding: 14px 30px;
+            border-radius: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 15px;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.25);
+            transition: 0.3s;
+        }
+        .btn-submit:active {
+            transform: scale(0.96);
+        }
+
+        /* Order items - dark */
+        .order-item-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 18px;
+            padding: 16px 18px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .order-info h4 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 2px;
+        }
+        .order-info p {
+            font-size: 13px;
+            color: #94a3b8;
+        }
+        .badge-status {
+            padding: 4px 14px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            display: inline-block;
+        }
+        .badge-completed {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.1);
+        }
+        .badge-pending {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.1);
+        }
+        .btn-access-link {
+            background: rgba(14, 165, 233, 0.1);
+            color: #38bdf8;
+            padding: 4px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 4px;
+            border: 1px solid rgba(14, 165, 233, 0.1);
+            transition: 0.3s;
+        }
+        .btn-access-link:hover {
+            background: rgba(14, 165, 233, 0.2);
+        }
+        .search-row {
+            display: flex;
+            gap: 10px;
+        }
+        .search-row input {
+            flex: 1;
+        }
+        .search-row .btn-submit {
+            padding: 0 18px;
+            white-space: nowrap;
+        }
+        #myOrdersResult {
+            max-height: 240px;
+            overflow-y: auto;
+            margin-top: 14px;
+        }
+        #myOrdersResult::-webkit-scrollbar {
+            width: 4px;
+        }
+        #myOrdersResult::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #myOrdersResult::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1200px) {
+            .arc-track {
+                max-width: 1000px;
+                height: 700px;
+            }
+            .card-3d {
+                width: 660px;
+                height: 370px;
+                border-radius: 36px;
+            }
+            .card-3d .card-media {
+                width: 72%;
+            }
+            .card-3d .card-body {
+                width: 28%;
+                padding: 20px 18px 18px 16px;
+            }
+            .card-3d .card-body h3 {
+                font-size: 22px;
+            }
+            .card-3d .card-body .desc {
+                font-size: 14px;
+            }
+            .card-3d .card-body .price {
+                font-size: 24px;
+            }
+            .card-3d .card-body .btn-buy-3d {
+                font-size: 16px;
+                padding: 16px 0;
+            }
+            .card-3d.pos-1 {
+                transform: translateX(190px) translateY(90px) translateZ(70px) rotateY(-10deg) scale(0.86);
+            }
+            .card-3d.pos--1 {
+                transform: translateX(-190px) translateY(90px) translateZ(70px) rotateY(-2deg) scale(0.86);
+            }
+            .card-3d.pos-2 {
+                transform: translateX(330px) translateY(200px) translateZ(0px) rotateY(-14deg) scale(0.74);
+            }
+            .card-3d.pos--2 {
+                transform: translateX(-330px) translateY(200px) translateZ(0px) rotateY(2deg) scale(0.74);
+            }
+            .card-3d.pos-0 {
+                transform: translateX(0px) translateY(0px) translateZ(160px) rotateY(-4deg) scale(1);
+            }
+            .notification-dropdown {
+                width: 300px;
+                right: -20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 12px 16px;
+                gap: 10px;
+            }
+            header .brand {
+                font-size: 20px;
+            }
+            .header-center {
+                order: 3;
+                flex-basis: 100%;
+                max-width: 100%;
+                margin-top: 4px;
+            }
+            .header-center .search-box input {
+                font-size: 14px;
+                padding: 10px 12px;
+            }
+            .header-nav .nav-link-btn {
+                font-size: 11px;
+                padding: 6px 12px;
+            }
+            .nav-link-btn.lang-btn {
+                font-size: 10px;
+            }
+            .zoom-controls input[type="range"] {
+                width: 70px;
+            }
+            .zoom-controls {
+                padding: 4px 10px 4px 14px;
+            }
+            .notification-btn {
+                padding: 6px 12px;
+                font-size: 16px;
+            }
+            .notification-dropdown {
+                width: 280px;
+                right: -30px;
+            }
+
+            .arc-track {
+                height: 520px;
+                max-width: 100%;
+            }
+            .card-3d {
+                width: 420px;
+                height: 240px;
+                border-radius: 26px;
+            }
+            .card-3d .card-media {
+                width: 70%;
+            }
+            .card-3d .card-body {
+                width: 30%;
+                padding: 14px 14px 12px 12px;
+            }
+            .card-3d .card-body h3 {
+                font-size: 17px;
+                margin-bottom: 4px;
+            }
+            .card-3d .card-body .desc {
+                font-size: 12px;
+                -webkit-line-clamp: 2;
+                margin-bottom: 6px;
+            }
+            .card-3d .card-body .price {
+                font-size: 19px;
+                margin-bottom: 10px;
+            }
+            .card-3d .card-body .btn-buy-3d {
+                font-size: 13px;
+                padding: 12px 0;
+            }
+
+            .card-3d.pos-1 {
+                transform: translateX(120px) translateY(65px) translateZ(50px) rotateY(-10deg) scale(0.85);
+            }
+            .card-3d.pos--1 {
+                transform: translateX(-120px) translateY(65px) translateZ(50px) rotateY(-2deg) scale(0.85);
+            }
+            .card-3d.pos-2 {
+                transform: translateX(200px) translateY(140px) translateZ(0px) rotateY(-14deg) scale(0.72);
+            }
+            .card-3d.pos--2 {
+                transform: translateX(-200px) translateY(140px) translateZ(0px) rotateY(2deg) scale(0.72);
+            }
+            .card-3d.pos-0 {
+                transform: translateX(0px) translateY(0px) translateZ(110px) rotateY(-4deg) scale(1);
+            }
+
+            .arc-nav .nav-btn {
+                width: 42px;
+                height: 42px;
+                font-size: 15px;
+            }
+
+            .about-section {
+                padding: 20px 16px;
+            }
+            .about-section h2 {
+                font-size: 20px;
+            }
+            .about-section p {
+                font-size: 14px;
+            }
+            .about-section .platform-badges span {
+                font-size: 12px;
+                padding: 4px 14px;
+            }
+
+            .footer-support {
+                font-size: 12px;
+                padding: 10px 14px;
+                flex-direction: column;
+                gap: 2px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .card-3d {
+                width: 330px;
+                height: 190px;
+                border-radius: 22px;
+            }
+            .card-3d .card-media {
+                width: 70%;
+            }
+            .card-3d .card-body {
+                width: 30%;
+                padding: 10px 10px 10px 8px;
+            }
+            .card-3d .card-body h3 {
+                font-size: 14px;
+                margin-bottom: 2px;
+            }
+            .card-3d .card-body .desc {
+                font-size: 10px;
+                -webkit-line-clamp: 2;
+                margin-bottom: 4px;
+            }
+            .card-3d .card-body .price {
+                font-size: 15px;
+                margin-bottom: 6px;
+            }
+            .card-3d .card-body .btn-buy-3d {
+                font-size: 10px;
+                padding: 8px 0;
+            }
+            .arc-track {
+                height: 400px;
+            }
+            .card-3d.pos-1 {
+                transform: translateX(80px) translateY(50px) translateZ(35px) rotateY(-10deg) scale(0.82);
+            }
+            .card-3d.pos--1 {
+                transform: translateX(-80px) translateY(50px) translateZ(35px) rotateY(-2deg) scale(0.82);
+            }
+            .card-3d.pos-2 {
+                transform: translateX(140px) translateY(110px) translateZ(0px) rotateY(-14deg) scale(0.68);
+            }
+            .card-3d.pos--2 {
+                transform: translateX(-140px) translateY(110px) translateZ(0px) rotateY(2deg) scale(0.68);
+            }
+            .card-3d.pos-0 {
+                transform: translateX(0px) translateY(0px) translateZ(70px) rotateY(-4deg) scale(1);
+            }
+
+            .arc-nav .nav-btn {
+                width: 34px;
+                height: 34px;
+                font-size: 12px;
+            }
+            .arc-nav .dot {
+                width: 6px;
+                height: 6px;
+            }
+            .arc-nav .dot.active {
+                width: 18px;
+            }
+            .modal-content {
+                padding: 20px 16px;
+            }
+            .modal-content h3 {
+                font-size: 20px;
+            }
+            .header-nav .nav-link-btn {
+                font-size: 9px;
+                padding: 5px 8px;
+            }
+            header .brand {
+                font-size: 16px;
+            }
+            .zoom-controls input[type="range"] {
+                width: 50px;
+            }
+            .zoom-controls {
+                padding: 2px 8px 2px 10px;
+                gap: 6px;
+            }
+            .zoom-controls label {
+                font-size: 10px;
+            }
+            .zoom-controls .zoom-value {
+                font-size: 11px;
+                min-width: 24px;
+            }
+            .entry-overlay h1 {
+                font-size: 28px;
+            }
+            .entry-overlay .btn-get-started {
+                padding: 14px 36px;
+                font-size: 16px;
+            }
+            .notification-dropdown {
+                width: 240px;
+                right: -40px;
+            }
+            .notification-item .notif-title {
+                font-size: 12px;
+            }
+            .notification-item .notif-body {
+                font-size: 11px;
+            }
+            .about-section h2 {
+                font-size: 18px;
+            }
+            .about-section p {
+                font-size: 13px;
+            }
+            .about-section .platform-badges {
+                gap: 10px;
+            }
+            .about-section .platform-badges span {
+                font-size: 11px;
+                padding: 4px 12px;
+            }
+        }
+
+        .no-results {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #94a3b8;
+            gap: 14px;
+            text-align: center;
+            width: 100%;
+        }
+        .no-results i {
+            font-size: 50px;
+            color: #334155;
+        }
+        .no-results p {
+            font-weight: 600;
+            font-size: 18px;
+            color: #fff;
+        }
+        .no-results span {
+            font-size: 14px;
+            color: #475569;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== VIDEO BACKGROUND (fixed, always visible) ===== -->
+    <div id="bgVideo">
+        <video autoplay muted loop playsinline>
+            <source src="https://files.catbox.moe/9wvqqr.mp4" type="video/mp4" />
+        </video>
+        <div class="bg-overlay"></div>
+    </div>
+
+    <!-- ===== ENTRY SCREEN ===== -->
+    <div id="entryScreen">
+        <div class="entry-overlay">
+            <h1>Pata <span>Link</span></h1>
+            <p>Magroup ya wakubwa <strong>under 18</strong></p>
+            <button class="btn-get-started" onclick="enterSite()">
+                <i class="fas fa-arrow-right"></i> Get Started
+            </button>
+            <div class="sub-text">✨ Premium WhatsApp &amp; Telegram Groups</div>
+        </div>
+    </div>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div id="mainContent">
+
+        <!-- HEADER -->
+        <header>
+            <div class="brand">
+                <i class="fas fa-fire"></i> Pata Link
+            </div>
+
+            <div class="header-center">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Tafuta group..." oninput="filterGroups()" />
+                </div>
+            </div>
+
+            <div class="header-nav">
+                <!-- ===== NOTIFICATION BELL ===== -->
+                <div class="notification-wrapper">
+                    <button class="notification-btn" onclick="toggleNotifications()" id="notifBtn">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" id="notifBadge">0</span>
+                    </button>
+                    <div class="notification-dropdown" id="notifDropdown">
+                        <div class="notif-header">
+                            <span>Arifa</span>
+                            <button class="mark-read" onclick="markAllRead()">Soma zote</button>
+                        </div>
+                        <div id="notifList">
+                            <div class="notification-empty">
+                                <i class="fas fa-bell-slash"></i>
+                                Hakuna arifa mpya
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="nav-link-btn lang-btn" id="langToggle" onclick="toggleLanguage()">
+                    <i class="fas fa-globe"></i> <span id="langLabel">SW</span>
+                </button>
+                <div class="zoom-controls">
+                    <label><i class="fas fa-search-plus"></i></label>
+                    <button class="zoom-btn" onclick="zoomOut()"><i class="fas fa-minus"></i></button>
+                    <input type="range" id="zoomSlider" min="50" max="150" value="100" oninput="updateZoom(this.value)" />
+                    <button class="zoom-btn" onclick="zoomIn()"><i class="fas fa-plus"></i></button>
+                    <span class="zoom-value" id="zoomValue">100%</span>
+                </div>
+                <a href="https://whatsapp.com/channel/0029VbBaKXB1t90W0S24QU0m" target="_blank" class="nav-link-btn whatsapp">
+                    <i class="fab fa-whatsapp"></i> Channel
+                </a>
+                <button class="nav-link-btn" onclick="openMyOrdersModal()">
+                    <i class="fas fa-receipt"></i> Oda
+                </button>
+                <button class="nav-link-btn" onclick="openAuthModal('login')">Login</button>
+                <button class="nav-link-btn primary" onclick="openAuthModal('signup')">Signup</button>
+            </div>
+        </header>
+
+        <!-- 3D CURVED ARC - ULTRA LARGE -->
+        <div class="arc-container">
+            <div class="arc-track" id="arcTrack">
+                <!-- Cards injected by JS -->
+            </div>
+        </div>
+
+        <!-- NAVIGATION -->
+        <div class="arc-nav" id="arcNav">
+            <button class="nav-btn" id="prevBtnArc"><i class="fas fa-chevron-left"></i></button>
+            <div class="dots" id="dotsContainerArc"></div>
+            <button class="nav-btn" id="nextBtnArc"><i class="fas fa-chevron-right"></i></button>
+        </div>
+
+        <!-- ===== ABOUT SECTION ===== -->
+        <div class="about-section">
+            <div class="about-content">
+                <h2><i class="fas fa-rocket"></i> About Pata Link</h2>
+                <p>
+                    Tunauza <span class="highlight">magroup ya WhatsApp na Telegram</span> kwa bei nafuu sana! 
+                    Tunatoa magroup ya aina mbalimbali ikiwa ni pamoja na <span class="highlight">Burudani, Biashara, Tech,</span>
+                    na mengine mengi. Gundua magroup yanayokufaa na ujiunge na jamii yetu inayokua kila siku.
+                </p>
+                <p>
+                    Bei zetu ni <span class="highlight">za chini</span> na malipo ni rahisi kupitia <span class="highlight">M-Pesa, TigoPesa, na Airtel Money</span>.
+                    Karibu sana!
+                </p>
+                <div class="platform-badges">
+                    <span class="wa"><i class="fab fa-whatsapp"></i> WhatsApp Groups</span>
+                    <span class="tg"><i class="fab fa-telegram"></i> Telegram Groups</span>
+                    <span><i class="fas fa-tag"></i> Bei Nafuu</span>
+                    <span><i class="fas fa-users"></i> Jamii Inayokua</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer-support">
+            <span><i class="fas fa-envelope"></i> <a href="mailto:sijamanyama788@gmail.com">sijamanyama788@gmail.com</a></span>
+            <span><i class="fas fa-phone-alt"></i> <a href="tel:072455910">072455910</a> (Developer Support)</span>
+            <span style="color:#475569;">| &copy; 2025 Pata Link</span>
+        </div>
+
+    </div><!-- end mainContent -->
+
+    <!-- MODALS -->
+    <div class="modal" id="checkoutModal">
+        <div class="modal-content">
+            <h3 id="checkoutTitle">Lipa kwa HarakaPay</h3>
+            <p class="subtitle" id="modalItemTitle"></p>
+            <form id="paymentForm">
+                <div class="form-group">
+                    <label id="phoneLabel">Namba ya Simu</label>
+                    <input type="text" id="payPhone" required placeholder="0712345678" />
+                </div>
+                <input type="hidden" id="payProductId" />
+                <input type="hidden" id="payAmount" />
+                <input type="hidden" id="payDescription" />
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeCheckout()" id="cancelBtn">Ghairi</button>
+                    <button type="submit" class="btn-submit" id="payBtn">Lipa Sasa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="myOrdersModal">
+        <div class="modal-content" style="max-width:520px;">
+            <h3 id="ordersTitle">Oda Zangu</h3>
+            <p class="subtitle" id="ordersSubtitle">Weka namba ya simu uliyotumia kulipia.</p>
+            <div class="form-group">
+                <label id="ordersPhoneLabel">Namba yako</label>
+                <div class="search-row">
+                    <input type="text" id="searchOrderPhone" placeholder="0712345678" />
+                    <button type="button" class="btn-submit" onclick="fetchMyOrders()" id="ordersSearchBtn">Tafuta</button>
+                </div>
+            </div>
+            <div id="myOrdersResult"></div>
+            <div class="modal-actions" style="margin-top:16px;">
+                <button type="button" class="btn-cancel" onclick="closeMyOrdersModal()" id="ordersCloseBtn">Funga</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="authModal">
+        <div class="modal-content">
+            <h3 id="authModalTitle">Ingia kwenye Akaunti</h3>
+            <p class="subtitle" id="authModalSubtitle">Weka taarifa zako.</p>
+            <form id="authForm">
+                <div class="form-group" id="nameGroup" style="display:none;">
+                    <label id="nameLabel">Jina Kamili</label>
+                    <input type="text" id="authName" placeholder="John Doe" />
+                </div>
+                <div class="form-group">
+                    <label id="emailLabel">Barua Pepe</label>
+                    <input type="email" id="authEmail" required placeholder="example@gmail.com" />
+                </div>
+                <div class="form-group">
+                    <label id="passLabel">Neno la Siri</label>
+                    <input type="password" id="authPassword" required placeholder="••••••••" />
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeAuthModal()" id="authCancelBtn">Ghairi</button>
+                    <button type="submit" class="btn-submit" id="authSubmitBtn">Wasilisha</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCvQGF9i7EAcUz72-1EriDJzc7Mcxvq-r0",
+            authDomain: "pata-link-za-magroup-whatsapp.firebaseapp.com",
+            projectId: "pata-link-za-magroup-whatsapp",
+            storageBucket: "pata-link-za-magroup-whatsapp.firebasestorage.app",
+            messagingSenderId: "603411167221",
+            appId: "1:603411167221:web:67c1e724e1cc93299c92bc",
+            measurementId: "G-RZJ0E92YF7"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let products = [];
+        let filteredProducts = [];
+        let currentIndex = 0;
+        let currentUser = JSON.parse(localStorage.getItem('pataLinkUser')) || null;
+        let currentLang = 'sw';
+        let notifications = [];
+        let unreadCount = 0;
+
+        // ===============================
+        // LANGUAGE
+        // ===============================
+        const lang = {
+            sw: {
+                searchPlaceholder: 'Tafuta group...',
+                noResults: 'Hakuna group linalolingana',
+                noGroups: 'Hakuna magroup yaliyowekwa bado',
+                adminSoon: 'Admin ataanza kuongeza hivi karibuni',
+                buyNow: 'NUNUA SASA',
+                checkoutTitle: 'Lipa kwa HarakaPay',
+                phoneLabel: 'Namba ya Simu',
+                cancel: 'Ghairi',
+                payNow: 'Lipa Sasa',
+                ordersTitle: 'Oda Zangu',
+                ordersSubtitle: 'Weka namba ya simu uliyotumia kulipia.',
+                ordersPhoneLabel: 'Namba yako',
+                ordersSearch: 'Tafuta',
+                ordersClose: 'Funga',
+                authLoginTitle: 'Ingia kwenye Akaunti',
+                authLoginSub: 'Weka taarifa zako.',
+                authSignupTitle: 'Fungua Akaunti',
+                authSignupSub: 'Jiunge nasi kwa dakika chache.',
+                nameLabel: 'Jina Kamili',
+                emailLabel: 'Barua Pepe',
+                passLabel: 'Neno la Siri',
+                authCancel: 'Ghairi',
+                authSubmitLogin: 'Ingia',
+                authSubmitSignup: 'Jiandikishe',
+                login: 'Login',
+                signup: 'Signup',
+                logout: 'Logout',
+                orders: 'Oda',
+                channel: 'Channel',
+                pending: 'Inasubiri',
+                completed: 'Imekamilika',
+                waitingPayment: 'Thibitisha malipo kwenye simu yako.',
+                openGroup: 'Fungua Group',
+                noOrders: 'Hakuna oda zilizopatikana.',
+                searchOrders: 'Tafuta oda zangu...',
+                enterPhone: 'Tafadhali weka namba ya simu.',
+                loginRequired: '⚠️ Lazima uwe umeingia (Login) au kujisajili (Signup) kabla ya kununua.',
+                loginSuccess: '✅ Umefanikiwa kuingia!',
+                logoutMsg: 'Umejitenga.',
+                paymentSent: 'Angalia simu yako na thibitisha malipo.',
+                networkError: 'Hitilafu ya mtandao. Hakikisha umeunganishwa.',
+                tryAgain: 'Hitilafu imetokea. Jaribu tena.',
+                enterValidPhone: 'Tafadhali weka namba sahihi ya simu.',
+                sending: 'Inatuma...',
+                paymentSuccess: '✅ Malipo yametumwa!',
+                noNotifications: 'Hakuna arifa mpya',
+                markAllRead: 'Soma zote'
+            },
+            en: {
+                searchPlaceholder: 'Search group...',
+                noResults: 'No matching group found',
+                noGroups: 'No groups added yet',
+                adminSoon: 'Admin will start adding soon',
+                buyNow: 'BUY NOW',
+                checkoutTitle: 'Pay with HarakaPay',
+                phoneLabel: 'Phone Number',
+                cancel: 'Cancel',
+                payNow: 'Pay Now',
+                ordersTitle: 'My Orders',
+                ordersSubtitle: 'Enter the phone number you used to pay.',
+                ordersPhoneLabel: 'Your number',
+                ordersSearch: 'Search',
+                ordersClose: 'Close',
+                authLoginTitle: 'Login to Account',
+                authLoginSub: 'Enter your details.',
+                authSignupTitle: 'Create Account',
+                authSignupSub: 'Join us in a few minutes.',
+                nameLabel: 'Full Name',
+                emailLabel: 'Email',
+                passLabel: 'Password',
+                authCancel: 'Cancel',
+                authSubmitLogin: 'Login',
+                authSubmitSignup: 'Sign Up',
+                login: 'Login',
+                signup: 'Signup',
+                logout: 'Logout',
+                orders: 'Orders',
+                channel: 'Channel',
+                pending: 'Pending',
+                completed: 'Completed',
+                waitingPayment: 'Confirm payment on your phone.',
+                openGroup: 'Open Group',
+                noOrders: 'No orders found.',
+                searchOrders: 'Search my orders...',
+                enterPhone: 'Please enter your phone number.',
+                loginRequired: '⚠️ You must login or signup before purchasing.',
+                loginSuccess: '✅ Login successful!',
+                logoutMsg: 'You have been logged out.',
+                paymentSent: 'Check your phone and confirm payment.',
+                networkError: 'Network error. Please check your connection.',
+                tryAgain: 'An error occurred. Please try again.',
+                enterValidPhone: 'Please enter a valid phone number.',
+                sending: 'Sending...',
+                paymentSuccess: '✅ Payment sent!',
+                noNotifications: 'No new notifications',
+                markAllRead: 'Mark all read'
+            }
+        };
+
+        function t(key) { return lang[currentLang][key] || key; }
+
+        window.toggleLanguage = function() {
+            currentLang = currentLang === 'sw' ? 'en' : 'sw';
+            document.getElementById('langLabel').textContent = currentLang.toUpperCase();
+            updateLanguageUI();
+            renderCards();
+            document.getElementById('searchInput').placeholder = t('searchPlaceholder');
+            renderNotifications();
+        };
+
+        function updateLanguageUI() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (key) el.textContent = t(key);
+            });
+            document.getElementById('langLabel').textContent = currentLang.toUpperCase();
+            document.getElementById('searchInput').placeholder = t('searchPlaceholder');
+        }
+
+        // ===============================
+        // AUTH
+        // ===============================
+        function updateAuthUI() {
+            const topBtn = document.querySelector('.nav-link-btn.primary');
+            if (currentUser) {
+                topBtn.textContent = t('logout');
+                topBtn.onclick = () => {
+                    localStorage.removeItem('pataLinkUser');
+                    currentUser = null;
+                    updateAuthUI();
+                    alert(t('logoutMsg'));
+                };
+            } else {
+                topBtn.textContent = t('signup');
+                topBtn.onclick = () => openAuthModal('signup');
+            }
+        }
+
+        // ===============================
+        // NOTIFICATIONS
+        // ===============================
+        function loadNotifications() {
+            try {
+                const notifRef = collection(db, "notifications");
+                onSnapshot(notifRef, (snapshot) => {
+                    notifications = [];
+                    snapshot.forEach((doc) => {
+                        notifications.push({ id: doc.id, ...doc.data() });
+                    });
+                    // Sort by createdAt descending
+                    notifications.sort((a, b) => {
+                        const da = a.createdAt ? new Date(a.createdAt) : new Date(0);
+                        const db2 = b.createdAt ? new Date(b.createdAt) : new Date(0);
+                        return db2 - da;
+                    });
+                    // Check unread count
+                    const readNotifs = JSON.parse(localStorage.getItem('readNotifications') || '[]');
+                    unreadCount = notifications.filter(n => !readNotifs.includes(n.id)).length;
+                    renderNotifications();
+                });
+            } catch (e) {
+                console.log("Notification listener error:", e);
+            }
+        }
+
+        function renderNotifications() {
+            const list = document.getElementById('notifList');
+            const badge = document.getElementById('notifBadge');
+
+            // Update badge
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                badge.classList.add('show');
+            } else {
+                badge.classList.remove('show');
+            }
+
+            if (notifications.length === 0) {
+                list.innerHTML = `
+                    <div class="notification-empty">
+                        <i class="fas fa-bell-slash"></i>
+                        ${t('noNotifications')}
+                    </div>
+                `;
+                return;
+            }
+
+            const readNotifs = JSON.parse(localStorage.getItem('readNotifications') || '[]');
+            let html = '';
+            notifications.forEach(n => {
+                const isRead = readNotifs.includes(n.id);
+                const time = n.createdAt ? new Date(n.createdAt).toLocaleString() : '';
+                html += `
+                    <div class="notification-item ${!isRead ? 'unread' : ''}" onclick="markNotificationRead('${n.id}')">
+                        <div class="notif-title">${n.title || 'Arifa'}</div>
+                        <div class="notif-body">${n.message || ''}</div>
+                        <span class="notif-time">${time}</span>
+                    </div>
+                `;
+            });
+            list.innerHTML = html;
+        }
+
+        window.toggleNotifications = function() {
+            const dropdown = document.getElementById('notifDropdown');
+            dropdown.classList.toggle('show');
+        };
+
+        window.markNotificationRead = function(id) {
+            const readNotifs = JSON.parse(localStorage.getItem('readNotifications') || '[]');
+            if (!readNotifs.includes(id)) {
+                readNotifs.push(id);
+                localStorage.setItem('readNotifications', JSON.stringify(readNotifs));
+                // Update unread count
+                unreadCount = notifications.filter(n => !readNotifs.includes(n.id)).length;
+                renderNotifications();
+            }
+        };
+
+        window.markAllRead = function() {
+            const readNotifs = notifications.map(n => n.id);
+            localStorage.setItem('readNotifications', JSON.stringify(readNotifs));
+            unreadCount = 0;
+            renderNotifications();
+            // Close dropdown
+            document.getElementById('notifDropdown').classList.remove('show');
+        };
+
+        // ===============================
+        // ZOOM CONTROLS
+        // ===============================
+        let currentZoom = 100;
+
+        window.updateZoom = function(value) {
+            currentZoom = parseInt(value);
+            document.getElementById('zoomValue').textContent = currentZoom + '%';
+            const track = document.getElementById('arcTrack');
+            const scale = currentZoom / 100;
+            track.style.transform = `scale(${scale})`;
+        };
+
+        window.zoomIn = function() {
+            const slider = document.getElementById('zoomSlider');
+            let val = parseInt(slider.value) + 10;
+            if (val > 150) val = 150;
+            slider.value = val;
+            updateZoom(val);
+        };
+
+        window.zoomOut = function() {
+            const slider = document.getElementById('zoomSlider');
+            let val = parseInt(slider.value) - 10;
+            if (val < 50) val = 50;
+            slider.value = val;
+            updateZoom(val);
+        };
+
+        // ===============================
+        // ARC STYLES
+        // ===============================
+        function getArcStyles(offset) {
+            let norm = offset;
+            if (norm > 2) norm = 2;
+            if (norm < -2) norm = -2;
+
+            const maxAngle = 22;
+            const angle = (norm / 2) * maxAngle;
+            const rad = angle * Math.PI / 180;
+            const radius = 450;
+
+            const x = radius * Math.sin(rad);
+            const y = radius * (1 - Math.cos(rad));
+
+            const scale = 1 - Math.abs(norm) * 0.12;
+            const opacity = 1 - Math.abs(norm) * 0.22;
+            const blur = Math.abs(norm) * 2;
+            const zIndex = Math.round(10 - Math.abs(norm) * 3);
+            const rotateY = -rad * (180 / Math.PI) * 0.5;
+            const translateZ = 150 - Math.abs(norm) * 75;
+
+            return {
+                transform: `translateX(${x}px) translateY(${y}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`,
+                opacity: opacity,
+                filter: `blur(${blur}px)`,
+                zIndex: zIndex,
+                boxShadow: norm === 0 ? '0 70px 100px rgba(0,0,0,0.3), 0 0 70px rgba(14,165,233,0.1)' : '0 40px 60px rgba(0,0,0,0.2)',
+                borderColor: norm === 0 ? 'rgba(14,165,233,0.15)' : 'rgba(255,255,255,0.04)'
+            };
+        }
+
+        // ===============================
+        // RENDER CARDS
+        // ===============================
+        function renderCards() {
+            const displayProducts = filteredProducts.length > 0 ? filteredProducts : products;
+            const track = document.getElementById('arcTrack');
+            const dotsContainer = document.getElementById('dotsContainerArc');
+
+            if (!displayProducts.length) {
+                const msg = products.length === 0 ? t('noGroups') : t('noResults');
+                const sub = products.length === 0 ? t('adminSoon') : '';
+                track.innerHTML = `
+                    <div class="no-results">
+                        <i class="fas fa-box-open"></i>
+                        <p>${msg}</p>
+                        ${sub ? `<span>${sub}</span>` : ''}
+                    </div>
+                `;
+                dotsContainer.innerHTML = '';
+                return;
+            }
+
+            if (currentIndex >= displayProducts.length) currentIndex = 0;
+            const total = displayProducts.length;
+
+            let dotsHtml = '';
+            for (let i = 0; i < total; i++) {
+                dotsHtml += `<div class="dot ${i === currentIndex ? 'active' : ''}" data-index="${i}"></div>`;
+            }
+            dotsContainer.innerHTML = dotsHtml;
+
+            let html = '';
+            for (let i = 0; i < total; i++) {
+                const p = displayProducts[i];
+                let offset = i - currentIndex;
+                if (offset > total / 2) offset -= total;
+                if (offset < -total / 2) offset += total;
+
+                const styles = getArcStyles(offset);
+                const isHidden = Math.abs(offset) > 2;
+
+                let mediaHtml = `<img src="${p.imageUrl || 'https://via.placeholder.com/850x470/0b0f19/334155?text=Group'}" alt="${p.title}" loading="lazy" />`;
+                if (p.videoUrl && !isHidden) {
+                    mediaHtml = `<video src="${p.videoUrl}" autoplay muted loop playsinline></video>`;
+                }
+
+                const cardClasses = `card-3d ${isHidden ? 'pos-hidden' : ''}`;
+                const styleAttr = isHidden ? '' :
+                    `transform:${styles.transform};opacity:${styles.opacity};filter:${styles.filter};z-index:${styles.zIndex};box-shadow:${styles.boxShadow};border-color:${styles.borderColor};`;
+
+                const buyText = t('buyNow');
+
+                html += `
+                    <div class="${cardClasses}" style="${styleAttr}" data-index="${i}">
+                        <div class="card-media">${mediaHtml}</div>
+                        <div class="card-body">
+                            <div class="card-text">
+                                <h3>${p.title}</h3>
+                                <p class="desc">${p.description || ''}</p>
+                                <div class="price">TSh ${(p.price || 0).toLocaleString()}</div>
+                            </div>
+                            <button class="btn-buy-3d" onclick="handleBuy('${p.id}', '${p.title.replace(/'/g, "\\'")}', ${p.price || 0})">
+                                <i class="fas fa-bolt"></i> ${buyText}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+            track.innerHTML = html;
+
+            document.querySelectorAll('.dot').forEach(dot => {
+                dot.addEventListener('click', () => {
+                    const idx = parseInt(dot.dataset.index);
+                    if (idx !== currentIndex) {
+                        currentIndex = idx;
+                        renderCards();
+                    }
+                });
+            });
+
+            const slider = document.getElementById('zoomSlider');
+            updateZoom(slider.value);
+        }
+
+        // ===============================
+        // FILTER
+        // ===============================
+        window.filterGroups = function() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            if (!query) {
+                filteredProducts = [];
+            } else {
+                filteredProducts = products.filter(p =>
+                    p.title.toLowerCase().includes(query) ||
+                    (p.description && p.description.toLowerCase().includes(query))
+                );
+            }
+            currentIndex = 0;
+            renderCards();
+        };
+
+        // ===============================
+        // NAVIGATION
+        // ===============================
+        function nextSlide() {
+            const displayProducts = filteredProducts.length > 0 ? filteredProducts : products;
+            if (!displayProducts.length) return;
+            currentIndex = (currentIndex + 1) % displayProducts.length;
+            renderCards();
+        }
+
+        function prevSlide() {
+            const displayProducts = filteredProducts.length > 0 ? filteredProducts : products;
+            if (!displayProducts.length) return;
+            currentIndex = (currentIndex - 1 + displayProducts.length) % displayProducts.length;
+            renderCards();
+        }
+
+        document.getElementById('prevBtnArc').addEventListener('click', prevSlide);
+        document.getElementById('nextBtnArc').addEventListener('click', nextSlide);
+
+        // ===============================
+        // SWIPE / DRAG
+        // ===============================
+        let startX = 0,
+            isDragging = false;
+        const container = document.querySelector('.arc-container');
+
+        container.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            isDragging = true;
+        }, { passive: true });
+
+        container.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            const diff = startX - e.touches[0].clientX;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0) nextSlide();
+                else prevSlide();
+                isDragging = false;
+            }
+        }, { passive: true });
+
+        container.addEventListener('touchend', () => { isDragging = false; }, { passive: true });
+
+        let mouseDown = false,
+            mouseStartX = 0;
+        container.addEventListener('mousedown', (e) => {
+            mouseDown = true;
+            mouseStartX = e.clientX;
+        });
+        container.addEventListener('mousemove', (e) => {
+            if (!mouseDown) return;
+            const diff = mouseStartX - e.clientX;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0) nextSlide();
+                else prevSlide();
+                mouseDown = false;
+            }
+        });
+        container.addEventListener('mouseup', () => { mouseDown = false; });
+        container.addEventListener('mouseleave', () => { mouseDown = false; });
+
+        // ===============================
+        // FETCH PRODUCTS
+        // ===============================
+        async function fetchProducts() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "products"));
+                products = [];
+                querySnapshot.forEach((doc) => {
+                    products.push({ id: doc.id, ...doc.data() });
+                });
+                filteredProducts = [];
+                document.getElementById('searchInput').value = '';
+                currentIndex = 0;
+                renderCards();
+            } catch (e) {
+                console.error(e);
+                document.getElementById('arcTrack').innerHTML = `<p style="color:#ef4444;text-align:center;width:100%;padding:40px;">Imeshindikana kupakia data.</p>`;
+            }
+        }
+
+        // ===============================
+        // BUY HANDLER
+        // ===============================
+        window.handleBuy = function(id, title, price) {
+            if (!currentUser) {
+                alert(t('loginRequired'));
+                openAuthModal('login');
+                return;
+            }
+            document.getElementById('checkoutModal').classList.add('show');
+            document.getElementById('modalItemTitle').textContent = title + ' — TSh ' + price.toLocaleString();
+            document.getElementById('payProductId').value = id;
+            document.getElementById('payAmount').value = price;
+            document.getElementById('payDescription').value = 'Malipo ya Group: ' + title;
+            document.getElementById('checkoutTitle').textContent = t('checkoutTitle');
+            document.getElementById('phoneLabel').textContent = t('phoneLabel');
+            document.getElementById('cancelBtn').textContent = t('cancel');
+            document.getElementById('payBtn').textContent = t('payNow');
+        };
+
+        window.closeCheckout = function() {
+            document.getElementById('checkoutModal').classList.remove('show');
+        };
+
+        // ===============================
+        // MY ORDERS
+        // ===============================
+        window.openMyOrdersModal = function() {
+            document.getElementById('myOrdersModal').classList.add('show');
+            document.getElementById('myOrdersResult').innerHTML = '';
+            document.getElementById('ordersTitle').textContent = t('ordersTitle');
+            document.getElementById('ordersSubtitle').textContent = t('ordersSubtitle');
+            document.getElementById('ordersPhoneLabel').textContent = t('ordersPhoneLabel');
+            document.getElementById('ordersSearchBtn').textContent = t('ordersSearch');
+            document.getElementById('ordersCloseBtn').textContent = t('ordersClose');
+        };
+
+        window.closeMyOrdersModal = function() {
+            document.getElementById('myOrdersModal').classList.remove('show');
+        };
+
+        window.fetchMyOrders = async function() {
+            const phone = document.getElementById('searchOrderPhone').value.trim();
+            const resultDiv = document.getElementById('myOrdersResult');
+            if (!phone) {
+                resultDiv.innerHTML = `<p style="color:#f59e0b;font-size:14px;text-align:center;">${t('enterPhone')}</p>`;
+                return;
+            }
+            resultDiv.innerHTML = `<p style="color:#94a3b8;text-align:center;font-size:14px;"><i class="fas fa-spinner fa-spin"></i> ${t('searchOrders')}</p>`;
+
+            try {
+                const q = query(collection(db, "orders"), where("phone", "==", phone));
+                const querySnapshot = await getDocs(q);
+                let ordersList = [];
+                querySnapshot.forEach(docSnap => {
+                    ordersList.push({ id: docSnap.id, ...docSnap.data() });
+                });
+
+                if (ordersList.length === 0) {
+                    resultDiv.innerHTML = `<p style="color:#94a3b8;text-align:center;font-size:14px;">${t('noOrders')}</p>`;
+                    return;
+                }
+
+                let html = '';
+                for (let o of ordersList) {
+                    let isCompleted = o.status === 'completed';
+                    let whatsappLink = '#';
+                    if (o.productId) {
+                        const prodSnap = await getDocs(collection(db, "products"));
+                        prodSnap.forEach(pDoc => {
+                            if (pDoc.id === o.productId) {
+                                whatsappLink = pDoc.data().whatsappLink || '#';
+                            }
+                        });
+                    }
+
+                    const statusText = isCompleted ? t('completed') : t('pending');
+                    const statusClass = isCompleted ? 'badge-completed' : 'badge-pending';
+                    const waitingText = !isCompleted ? `<p style="font-size:12px;color:#f59e0b;margin-top:4px;">${t('waitingPayment')}</p>` : '';
+                    const groupLink = isCompleted && whatsappLink !== '#' ?
+                        `<br><a href="${whatsappLink}" target="_blank" class="btn-access-link"><i class="fab fa-whatsapp"></i> ${t('openGroup')}</a>` : '';
+
+                    html += `
+                        <div class="order-item-card">
+                            <div class="order-info">
+                                <h4>${o.description || 'WhatsApp Group'}</h4>
+                                <p>TSh ${(o.amount || 0).toLocaleString()} · ${o.date || ''}</p>
+                                <span class="badge-status ${statusClass}">${isCompleted ? '✅' : '⏳'} ${statusText}</span>
+                                ${groupLink}
+                                ${waitingText}
+                            </div>
+                        </div>
+                    `;
+                }
+                resultDiv.innerHTML = html;
+            } catch (e) {
+                resultDiv.innerHTML = `<p style="color:#ef4444;text-align:center;font-size:14px;">${t('networkError')}</p>`;
+            }
+        };
+
+        // ===============================
+        // AUTH MODAL
+        // ===============================
+        window.openAuthModal = function(type) {
+            const modal = document.getElementById('authModal');
+            const title = document.getElementById('authModalTitle');
+            const subtitle = document.getElementById('authModalSubtitle');
+            const nameGroup = document.getElementById('nameGroup');
+            const submitBtn = document.getElementById('authSubmitBtn');
+
+            modal.classList.add('show');
+            if (type === 'signup') {
+                title.textContent = t('authSignupTitle');
+                subtitle.textContent = t('authSignupSub');
+                nameGroup.style.display = 'block';
+                submitBtn.textContent = t('authSubmitSignup');
+                document.getElementById('nameLabel').textContent = t('nameLabel');
+            } else {
+                title.textContent = t('authLoginTitle');
+                subtitle.textContent = t('authLoginSub');
+                nameGroup.style.display = 'none';
+                submitBtn.textContent = t('authSubmitLogin');
+            }
+            document.getElementById('emailLabel').textContent = t('emailLabel');
+            document.getElementById('passLabel').textContent = t('passLabel');
+            document.getElementById('authCancelBtn').textContent = t('authCancel');
+        };
+
+        window.closeAuthModal = function() {
+            document.getElementById('authModal').classList.remove('show');
+        };
+
+        document.getElementById('authForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('authEmail').value.trim();
+            const name = document.getElementById('authName').value.trim() || email.split('@')[0];
+            currentUser = { email, name };
+            localStorage.setItem('pataLinkUser', JSON.stringify(currentUser));
+            updateAuthUI();
+            closeAuthModal();
+            alert(t('loginSuccess'));
+        });
+
+        // ===============================
+        // PAYMENT
+        // ===============================
+        document.getElementById('paymentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const phone = document.getElementById('payPhone').value.trim();
+            const amount = document.getElementById('payAmount').value;
+            const description = document.getElementById('payDescription').value;
+            const productId = document.getElementById('payProductId').value;
+            const btn = document.getElementById('payBtn');
+
+            if (!phone || phone.length < 10) {
+                alert(t('enterValidPhone'));
+                return;
+            }
+
+            btn.textContent = t('sending');
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/v1/collect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, amount, description, productId })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    alert(t('paymentSuccess') + '\n' + t('paymentSent'));
+                    closeCheckout();
+                } else {
+                    alert('❌ ' + (data.message || t('tryAgain')));
+                }
+            } catch (err) {
+                alert('❌ ' + t('networkError'));
+            } finally {
+                btn.textContent = t('payNow');
+                btn.disabled = false;
+            }
+        });
+
+        // ===============================
+        // ENTRY SCREEN
+        // ===============================
+        window.enterSite = function() {
+            document.getElementById('entryScreen').style.display = 'none';
+            document.getElementById('mainContent').classList.add('show');
+            setTimeout(() => {
+                const slider = document.getElementById('zoomSlider');
+                updateZoom(slider.value);
+            }, 100);
+        };
+
+        // ===============================
+        // INIT
+        // ===============================
+        updateAuthUI();
+        fetchProducts();
+        loadNotifications();
+        setInterval(fetchProducts, 20000);
+
+        document.getElementById('searchInput').placeholder = t('searchPlaceholder');
+
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            el.textContent = t(el.dataset.i18n);
+        });
+
+        // Close notification dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const wrapper = document.querySelector('.notification-wrapper');
+            if (wrapper && !wrapper.contains(e.target)) {
+                document.getElementById('notifDropdown').classList.remove('show');
+            }
+        });
+    </script>
+</body>
+  </html>
