@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lipia na Pata Link</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #121212; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: #1e1e1e; padding: 30px; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); text-align: center; box-sizing: border-box; }
+        h3 { color: #00ff88; margin-top: 0; margin-bottom: 10px; font-size: 18px; }
+        .price-tag { font-size: 24px; font-weight: bold; color: #fff; margin-bottom: 20px; background: #2a2a2a; padding: 10px; border-radius: 6px; }
+        input { width: 100%; padding: 14px; margin-top: 10px; background: #2a2a2a; border: 1px solid #444; color: #fff; border-radius: 6px; box-sizing: border-box; font-size: 16px; text-align: center; }
+        button { width: 100%; margin-top: 20px; padding: 14px; background: #00ff88; color: #000; border: none; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #00cc6a; }
+        .msg { margin-top: 15px; font-size: 14px; word-break: break-all; }
+        a.link-btn { display: inline-block; margin-top: 15px; padding: 12px 20px; background: #25D366; color: #fff; text-decoration: none; font-weight: bold; border-radius: 6px; width: 100%; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h3>Lipa kwa Airtel Money / M-Pesa / TigoPesa</h3>
+        <div id="priceDisplay" class="price-tag">Inapakia bei...</div>
+
+        <form id="paymentForm">
+            <input type="text" id="phoneInput" required placeholder="Weka namba ya simu (Mfano: 0712345678)">
+            <button type="submit" id="payBtn">Lipia Sasa</button>
+        </form>
+
+        <div id="msg" class="msg"></div>
+    </div>
+
+    <script>
+        let currentPrice = 1000;
+
+        async function fetchSettings() {
+            try {
+                const res = await fetch('/api/settings');
+                const data = await res.json();
+                if (data.success) {
+                    currentPrice = data.price || 1000;
+                    document.getElementById('priceDisplay').innerText = `Bei: TZS ${currentPrice.toLocaleString()}`;
+                }
+            } catch (e) {
+                document.getElementById('priceDisplay').innerText = `Bei: TZS 1,000`;
+            }
+        }
+        fetchSettings();
+
+        document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const phone = document.getElementById('phoneInput').value;
+            const msg = document.getElementById('msg');
+            const payBtn = document.getElementById('payBtn');
+
+            msg.style.color = '#fff';
+            msg.innerText = 'Inatuma ombi la malipo kwenye simu yako...';
+            payBtn.disabled = true;
+
+            try {
+                const res = await fetch('/api/v1/collect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: phone, amount: currentPrice })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    msg.style.color = '#00ff88';
+                    msg.innerText = 'USSD push imetumwa kwenye simu yako. Weka namba ya siri kulipia.';
+                    
+                    const orderId = data.order_id;
+                    let checkInterval = setInterval(async () => {
+                        try {
+                            const statusRes = await fetch('/api/v1/check-status', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ order_id: orderId })
+                            });
+                            const statusData = await statusRes.json();
+                            if (statusData.success && statusData.status === 'completed') {
+                                clearInterval(checkInterval);
+                                msg.innerHTML = `Malipo yamekamilika! Bonyeza hapa chini kuingia kwenye group:<br><a class="link-btn" href="${statusData.groupLink}" target="_blank">Jiunge na Group Hapa</a>`;
+                                payBtn.disabled = false;
+                            }
+                        } catch (err) {
+                            console.error(err);
+                        }
+                    }, 4000);
+
+                } else {
+                    msg.style.color = '#ff4444';
+                    msg.innerText = data.message || 'Imeshindikana kutuma ombi.';
+                    payBtn.disabled = false;
+                }
+            } catch (err) {
+                msg.style.color = '#ff4444';
+                msg.innerText = 'Hitilafu ya mtandao.';
+                payBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
+
