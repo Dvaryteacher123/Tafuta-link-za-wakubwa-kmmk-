@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Simamia Bei na Link</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #121212; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: #1e1e1e; padding: 30px; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        h2 { text-align: center; margin-bottom: 20px; color: #00ff88; }
+        label { display: block; margin-top: 15px; font-size: 14px; }
+        input { width: 100%; padding: 12px; margin-top: 5px; background: #2a2a2a; border: 1px solid #444; color: #fff; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; margin-top: 25px; padding: 12px; background: #00ff88; color: #000; border: none; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #00cc6a; }
+        .msg { margin-top: 15px; text-align: center; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Usimamizi wa Bei</h2>
+        <form id="settingsForm">
+            <label>Weka Bei (TZS):</label>
+            <input type="number" id="priceInput" required placeholder="Mfano: 1000">
+
+            <label>Weka WhatsApp Group Link:</label>
+            <input type="text" id="linkInput" required placeholder="https://chat.whatsapp.com/...">
+
+            <button type="submit">Hifadhi Mabadiliko</button>
+        </form>
+        <div id="msg" class="msg"></div>
+    </div>
+
+    <script>
+        async function loadSettings() {
+            try {
+                const res = await fetch('/api/settings');
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('priceInput').value = data.price || '';
+                    document.getElementById('linkInput').value = data.groupLink || '';
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        loadSettings();
+
+        document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const price = document.getElementById('priceInput').value;
+            const groupLink = document.getElementById('linkInput').value;
+            const msg = document.getElementById('msg');
+
+            msg.style.color = '#fff';
+            msg.innerText = 'Inahifadhi...';
+
+            try {
+                const res = await fetch('/api/admin/save-settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ price, groupLink })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    msg.style.color = '#00ff88';
+                    msg.innerText = data.message;
+                } else {
+                    msg.style.color = '#ff4444';
+                    msg.innerText = data.message || 'Imeshindikana kuhifadhi.';
+                }
+            } catch (err) {
+                msg.style.color = '#ff4444';
+                msg.innerText = 'Hitilafu ya mtandao.';
+            }
+        });
+    </script>
+</body>
+</html>
+
